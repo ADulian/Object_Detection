@@ -10,6 +10,9 @@ import logging
 
 import lightning as L
 
+from datasets.coco_dataset import CocoDataset
+from utils.io import path_check
+
 log = logging.getLogger("lightning")
 
 # --------------------------------------------------------------------------------
@@ -24,6 +27,11 @@ class DataManager(L.LightningDataModule):
         """
         super().__init__()
 
+        # Datasets
+        self._train_set = None
+        self._val_set = None
+        self._test_set = None
+
         log.info("Data Manager Initialized")
 
     # --------------------------------------------------------------------------------
@@ -31,8 +39,29 @@ class DataManager(L.LightningDataModule):
         ...
 
     # --------------------------------------------------------------------------------
-    def setup(self, stage: str) -> None:
-        ...
+    def setup(self, stage: str = "") -> None:
+        """
+
+        Args:
+            stage: (str): Processing stage, e.g. "train"
+
+        """
+
+        # Paths
+        coco_root = path_check("/media/albert/FastData/Data/data-mscoco")
+
+        train_imgs_path = coco_root / "images/train2017"
+        val_imgs_path = coco_root / "images/val2017"
+        test_imgs_path = coco_root / "images/test2017"
+
+        train_annotations_path = coco_root / "annotations/person_keypoints_train2017.json"
+        val_annotations_path = coco_root / "annotations/person_keypoints_val2017.json"
+
+        # Datasets
+        # self._train_set = CocoDataset()
+        self._val_set = CocoDataset(imgs_path=val_imgs_path,
+                                    annotations_path=val_annotations_path)
+
 
     # --------------------------------------------------------------------------------
     def train_dataloader(self) -> None:
