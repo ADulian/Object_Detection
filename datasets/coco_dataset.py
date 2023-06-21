@@ -8,7 +8,7 @@ log = logging.getLogger("lightning")
 class CocoDataset:
 
     # --------------------------------------------------------------------------------
-    def __init__(self):
+    def __init__(self,):
 
 
         log.info("Coco Dataset Initialized")
@@ -26,4 +26,10 @@ class CocoDataset:
         ...
 
 
+# --------------------------------------------------------------------------------
+class CocoDataSample:
+
+    # --------------------------------------------------------------------------------
+    def __init__(self):
+        ...
 
