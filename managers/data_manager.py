@@ -54,13 +54,13 @@ class DataManager(L.LightningDataModule):
         val_imgs_path = coco_root / "images/val2017"
         test_imgs_path = coco_root / "images/test2017"
 
-        train_annotations_path = coco_root / "annotations/person_keypoints_train2017.json"
-        val_annotations_path = coco_root / "annotations/person_keypoints_val2017.json"
+        train_annotations_file = coco_root / "annotations/person_keypoints_train2017.json"
+        val_annotations_file = coco_root / "annotations/person_keypoints_val2017.json"
 
         # Datasets
         # self._train_set = CocoDataset()
         self._val_set = CocoDataset(imgs_path=val_imgs_path,
-                                    annotations_path=val_annotations_path)
+                                    annotations_file=val_annotations_file)
 
 
     # --------------------------------------------------------------------------------
