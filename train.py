@@ -6,10 +6,6 @@ from managers.data_manager import DataManager
 log = logging.getLogger("lightning")
 log.setLevel(logging.INFO)
 
-ch = logging.StreamHandler()
-ch.setLevel(logging.INFO)
-log.addHandler(ch)
-
 # --------------------------------------------------------------------------------
 def main():
     """ Main
