@@ -60,9 +60,9 @@ class DataManager(L.LightningDataModule):
         val_annotations_file = coco_root / "annotations/person_keypoints_val2017.json"
 
         # Datasets
-        self._train_set = CocoDataset(dataset_split=DatasetSplit.TRAIN,
-                                      imgs_path=train_imgs_path,
-                                      annotations_file=train_annotations_file)
+        # self._train_set = CocoDataset(dataset_split=DatasetSplit.TRAIN,
+        #                               imgs_path=train_imgs_path,
+        #                               annotations_file=train_annotations_file)
 
         self._val_set = CocoDataset(dataset_split=DatasetSplit.VALIDATION,
                                     imgs_path=val_imgs_path,
