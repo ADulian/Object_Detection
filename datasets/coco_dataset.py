@@ -5,22 +5,36 @@ from pathlib import Path
 from collections import defaultdict
 
 from datasets.coco_data_sample import CocoDataSample
+from datasets.base_classes import DatasetSplit
 
 log = logging.getLogger("lightning")
 
 
 # --------------------------------------------------------------------------------
 class CocoDataset:
+    """Coco Dataset Wrapper
+    """
 
     # --------------------------------------------------------------------------------
     def __init__(self,
+                 dataset_split: DatasetSplit,
                  imgs_path: Path,
                  annotations_file: (Path | None) = None):
+        """Initialize Coco Dataset
 
+        Args:
+            dataset_split: (DatasetSplit): Dataset split
+            imgs_path: (Path): Root path to images
+            annotations_file: (Path | None): Path to annotations file
+
+        """
+
+        self._dataset_split = dataset_split
         self._imgs_path = imgs_path
         self._data_samples = self._load_data(annotations_file=annotations_file)
 
-        log.info("Coco Dataset Initialized")
+        split = dataset_split.name[0] + dataset_split.name[1:].lower()
+        log.info(f"{split} Coco Dataset Initialized")
 
     # --------------------------------------------------------------------------------
     @staticmethod

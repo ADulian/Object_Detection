@@ -13,6 +13,8 @@ import lightning as L
 from datasets.coco_dataset import CocoDataset
 from utils.io import path_check
 
+from datasets.base_classes import DatasetSplit
+
 log = logging.getLogger("lightning")
 
 # --------------------------------------------------------------------------------
@@ -59,7 +61,8 @@ class DataManager(L.LightningDataModule):
 
         # Datasets
         # self._train_set = CocoDataset()
-        self._val_set = CocoDataset(imgs_path=val_imgs_path,
+        self._val_set = CocoDataset(dataset_split=DatasetSplit.VALIDATION,
+                                    imgs_path=val_imgs_path,
                                     annotations_file=val_annotations_file)
 
 
