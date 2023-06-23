@@ -54,19 +54,19 @@ class DataManager(L.LightningDataModule):
 
         train_imgs_path = coco_root / "images/train2017"
         val_imgs_path = coco_root / "images/val2017"
-        test_imgs_path = coco_root / "images/test2017"
+        # test_imgs_path = coco_root / "images/test2017"
 
         train_annotations_file = coco_root / "annotations/person_keypoints_train2017.json"
         val_annotations_file = coco_root / "annotations/person_keypoints_val2017.json"
 
         # Datasets
-        # self._train_set = CocoDataset()
+        self._train_set = CocoDataset(dataset_split=DatasetSplit.TRAIN,
+                                      imgs_path=train_imgs_path,
+                                      annotations_file=train_annotations_file)
+
         self._val_set = CocoDataset(dataset_split=DatasetSplit.VALIDATION,
                                     imgs_path=val_imgs_path,
                                     annotations_file=val_annotations_file)
-
-        a = next(iter(self._val_set))
-
 
     # --------------------------------------------------------------------------------
     def train_dataloader(self) -> None:
