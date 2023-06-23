@@ -27,6 +27,16 @@ class CocoDataSample:
         # Annotations Data
         self.annotations = [CocoAnnotation(annotation=annotation) for annotation in annotation_data]
 
+    # --------------------------------------------------------------------------------
+    def get_bboxes(self) -> np.ndarray:
+        """Get an array of bounding boxes for all annotations
+
+        Returns:
+            np.ndarray: Array of bounding boxes of shape [num_bboxs, 4] where 4 -> [x_min, y_min, width, height]
+        """
+
+        return np.stack([annotation.bbox for annotation in self.annotations])
+
 # --------------------------------------------------------------------------------
 class CocoAnnotation:
     """Wrapper for a single annotation

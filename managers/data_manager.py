@@ -65,6 +65,8 @@ class DataManager(L.LightningDataModule):
                                     imgs_path=val_imgs_path,
                                     annotations_file=val_annotations_file)
 
+        a = next(iter(self._val_set))
+
 
     # --------------------------------------------------------------------------------
     def train_dataloader(self) -> None:

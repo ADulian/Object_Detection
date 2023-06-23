@@ -4,14 +4,17 @@ import logging
 from pathlib import Path
 from collections import defaultdict
 
+from torch.utils.data import Dataset
+
 from datasets.coco_data_sample import CocoDataSample
 from datasets.base_classes import DatasetSplit
+from utils.io import load_image
 
 log = logging.getLogger("lightning")
 
 
 # --------------------------------------------------------------------------------
-class CocoDataset:
+class CocoDataset(Dataset):
     """Coco Dataset Wrapper
     """
 
@@ -76,12 +79,36 @@ class CocoDataset:
         return data_samples
 
     # --------------------------------------------------------------------------------
-    def __len__(self):
+    def __len__(self) -> int:
+        """Get length of dataset
+
+        Return:
+             int: Length of dataset
+        """
         return len(self._data_samples)
 
     # --------------------------------------------------------------------------------
-    def __getitem__(self):
-        ...
+    def __getitem__(self, idx: int):
+        """
+
+        Args:
+            idx: (int): Index of the sample
+
+        Returns:
+
+        """
+
+        # Get data sample
+        data_sample = self._data_samples[idx]
+
+        # Load image
+        img_path = Path(self._imgs_path) / data_sample.img_file_name
+        img = load_image(path=img_path)
+
+        # Get bounding boxes
+        bboxs = data_sample.get_bboxes()
+
+        return img, bboxs
 
 
 
