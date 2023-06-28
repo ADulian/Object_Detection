@@ -9,11 +9,11 @@ ToDo:
 import logging
 
 import lightning as L
+from pathlib import Path
 
 from datasets.coco_dataset import CocoDataset
-from utils.io import path_check
-
 from datasets.base_classes import DatasetSplit
+from utils.io import path_check
 
 log = logging.getLogger("lightning")
 
@@ -24,10 +24,17 @@ class DataManager(L.LightningDataModule):
     General management of datasets
     """
     # --------------------------------------------------------------------------------
-    def __init__(self):
+    def __init__(self, coco_root_path: (str | Path)):
         """Initialize Data Manager
+
+        Args:
+            coco_root_path: (str | Path): Root path to coco dataset
+
         """
         super().__init__()
+
+        # Attr
+        self._coco_root_path = path_check(coco_root_path)
 
         # Datasets
         self._train_set = None
@@ -50,14 +57,15 @@ class DataManager(L.LightningDataModule):
         """
 
         # Paths
-        coco_root = path_check("/media/albert/FastData/Data/data-mscoco")
+        # coco_root = path_check("/media/albert/FastData/Datasets/COCO")
+        # coco_root = path_check("/media/albert/FastData/Datasets/COCO")
 
-        train_imgs_path = coco_root / "images/train2017"
-        val_imgs_path = coco_root / "images/val2017"
+        train_imgs_path = self._coco_root_path / "images/train2017"
+        val_imgs_path = self._coco_root_path / "images/val2017"
         # test_imgs_path = coco_root / "images/test2017"
 
-        train_annotations_file = coco_root / "annotations/person_keypoints_train2017.json"
-        val_annotations_file = coco_root / "annotations/person_keypoints_val2017.json"
+        train_annotations_file = self._coco_root_path / "annotations/person_keypoints_train2017.json"
+        val_annotations_file = self._coco_root_path / "annotations/person_keypoints_val2017.json"
 
         # Datasets
         # self._train_set = CocoDataset(dataset_split=DatasetSplit.TRAIN,
