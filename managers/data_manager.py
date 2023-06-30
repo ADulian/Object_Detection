@@ -1,9 +1,3 @@
-"""
-ToDo:
-    - Setup Train/Val/Test Loaders
-
-"""
-
 import logging
 
 import lightning as L
@@ -45,10 +39,12 @@ class DataManager(L.LightningDataModule):
         """
         super().__init__()
 
-        # Attr
+        # --- Attr
+
+        # General
         self._coco_root_path = path_check(coco_root_path)
 
-        # Datasets
+        # Datasets specific
         self._train_set = None
         self._val_set = None
         self._test_set = None
