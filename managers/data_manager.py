@@ -75,9 +75,6 @@ class DataManager(L.LightningDataModule):
         """
 
         # Paths
-        # coco_root = path_check("/media/albert/FastData/Datasets/COCO")
-        # coco_root = path_check("/media/albert/FastData/Datasets/COCO")
-
         train_imgs_path = self._coco_root_path / "images/train2017"
         val_imgs_path = self._coco_root_path / "images/val2017"
         # test_imgs_path = coco_root / "images/test2017"
