@@ -1,7 +1,5 @@
 """
 ToDo:
-    - Loading COCO dataset
-    - Incorporating Lightning Data Module
     - Setup Train/Val/Test Loaders
 
 """
@@ -10,6 +8,7 @@ import logging
 
 import lightning as L
 from pathlib import Path
+from torch.utils.data import DataLoader
 
 from datasets.coco_dataset import CocoDataset
 from datasets.base_classes import DatasetSplit
@@ -24,11 +23,24 @@ class DataManager(L.LightningDataModule):
     General management of datasets
     """
     # --------------------------------------------------------------------------------
-    def __init__(self, coco_root_path: (str | Path)):
+    def __init__(self,
+                 coco_root_path: (str | Path),
+                 train_batch_size: int = 1,
+                 val_batch_size: int = 1,
+                 test_batch_size: int = 1,
+                 shuffle: bool = False,
+                 pin_memory: bool = False,
+                 num_workers: int = 0) -> None:
         """Initialize Data Manager
 
         Args:
             coco_root_path: (str | Path): Root path to coco dataset
+            train_batch_size: (int): Train batch size
+            val_batch_size: (int): Validation batch size
+            test_batch_size: (int): Test batch size
+            shuffle: (bool): Shuffle data
+            pin_memory: (bool): Pin memory
+            num_workers: (int): Number of workers
 
         """
         super().__init__()
@@ -40,6 +52,16 @@ class DataManager(L.LightningDataModule):
         self._train_set = None
         self._val_set = None
         self._test_set = None
+
+        self._train_batch_size = train_batch_size
+        self._val_batch_size = val_batch_size
+        self._test_batch_size = test_batch_size
+
+        self._shuffle = shuffle
+
+        self._pin_memory = pin_memory
+        self._num_workers = num_workers
+
 
         log.info("Data Manager Initialized")
 
@@ -77,16 +99,34 @@ class DataManager(L.LightningDataModule):
                                     annotations_file=val_annotations_file)
 
     # --------------------------------------------------------------------------------
-    def train_dataloader(self) -> None:
-        ...
+    def train_dataloader(self) -> DataLoader:
+        """Get train data loader
+
+        Returns:
+            DataLoader: Train data loader object
+        """
+        return DataLoader(dataset=self._train_set, batch_size=self._train_batch_size, shuffle=self._shuffle,
+                          pin_memory=self._pin_memory, num_workers=self._num_workers)
 
     # --------------------------------------------------------------------------------
-    def val_dataloader(self) -> None:
-        ...
+    def val_dataloader(self) -> DataLoader:
+        """Get val data loader
+
+        Returns:
+            DataLoader: Val data loader object
+        """
+        return DataLoader(dataset=self._val_set, batch_size=self._val_batch_size, shuffle=False,
+                          pin_memory=self._pin_memory, num_workers=self._num_workers)
 
     # --------------------------------------------------------------------------------
-    def test_dataloader(self) -> None:
-        ...
+    def test_dataloader(self) -> DataLoader:
+        """Get test data loader
+
+        Returns:
+            DataLoader: Test data loader object
+        """
+        return DataLoader(dataset=self._test_set, batch_size=self._test_batch_size, shuffle=False,
+                          pin_memory=self._pin_memory, num_workers=self._num_workers)
 
 
 
