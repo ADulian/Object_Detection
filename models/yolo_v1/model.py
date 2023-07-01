@@ -3,8 +3,9 @@ import sys
 import yaml
 import lightning as L
 
-from utils.io import path_check
+from torch import nn
 
+from utils.io import path_check
 from ..common.conv_layers import ConvMaxPoolBlock
 
 # --------------------------------------------------------------------------------
@@ -25,23 +26,29 @@ class YoloV1(L.LightningModule):
     def _get_cfg():
 
         root_path = path_check(os.path.dirname(os.path.abspath(__file__)))
-        config_path = root_path / "config.yaml"
+        cfg = root_path / "config.yaml"
 
-        with open(config_path, "r") as f:
+        with open(cfg, "r") as f:
             cfg = yaml.safe_load(f)
 
         return cfg
 
     # --------------------------------------------------------------------------------
     def _parse_model(self):
-        layers = self._cfg["layers"]
 
-        for layer in layers:
-            module = layer.split("_")[0]
-            module = getattr(sys.modules[__name__], module)
-            module = module()
+        layers = []
+        cfg_layers = self._cfg["layers"]
 
-            ...
+        for layer in cfg_layers:
+            modules = cfg_layers[layer]
+            conv_max_pool_block = ConvMaxPoolBlock(modules=modules)
+            # module: = getattr(sys.modules[__name__], module)
+
+            layers.append(conv_max_pool_block)
+
+
+        model = nn.Sequential(*layers)
+        ...
 
     # --------------------------------------------------------------------------------
     def _init_model(self):
