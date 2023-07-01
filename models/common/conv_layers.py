@@ -7,7 +7,7 @@ from torch import nn
 class ConvMaxPoolBlock(nn.Module):
 
     # --------------------------------------------------------------------------------
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1):
+    def __init__(self):
         super().__init__()
 
         ...

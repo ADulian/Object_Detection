@@ -1,8 +1,11 @@
 import os
+import sys
 import yaml
 import lightning as L
 
 from utils.io import path_check
+
+from ..common.conv_layers import ConvMaxPoolBlock
 
 # --------------------------------------------------------------------------------
 class YoloV1(L.LightningModule):
@@ -18,6 +21,7 @@ class YoloV1(L.LightningModule):
 
     # --------------------------------------------------------------------------------
     @staticmethod
+
     def _get_cfg():
 
         root_path = path_check(os.path.dirname(os.path.abspath(__file__)))
@@ -30,7 +34,14 @@ class YoloV1(L.LightningModule):
 
     # --------------------------------------------------------------------------------
     def _parse_model(self):
-        ...
+        layers = self._cfg["layers"]
+
+        for layer in layers:
+            module = layer.split("_")[0]
+            module = getattr(sys.modules[__name__], module)
+            module = module()
+
+            ...
 
     # --------------------------------------------------------------------------------
     def _init_model(self):
