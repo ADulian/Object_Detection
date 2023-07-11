@@ -23,21 +23,3 @@ def get_layer(layer: str) -> Callable:
 
     raise ValueError(f"{layer} not found in any of the modules")
 
-# --------------------------------------------------------------------------------
-def auto_pad(kernel_size: int,
-             padding: (int | None) = None) -> int:
-    """Auto padding based on kernel size
-
-    Args:
-        kernel_size: (int): Kernel Size
-        padding: (int | None): Padding, if None then the value will be computed from kernel
-
-    Returns:
-        int: Padding value
-
-    """
-
-    if padding is None:
-        return kernel_size // 2
-    else:
-        return padding

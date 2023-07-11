@@ -1,12 +1,12 @@
 import os
-import sys
 import yaml
+import torch
 import lightning as L
 
 from torch import nn
 
 from utils.io import path_check
-from ..common.conv_block import ConvBlock
+from models.common.utils import get_layer
 
 # --------------------------------------------------------------------------------
 class YoloV1(L.LightningModule):
@@ -20,7 +20,7 @@ class YoloV1(L.LightningModule):
         """
         super().__init__()
 
-        self._cfg = self._get_cfg()
+        # Initialize Model
         self.yolo = self._parse_model()
 
     # --------------------------------------------------------------------------------
@@ -49,24 +49,46 @@ class YoloV1(L.LightningModule):
         """
         model = []
         in_channels = 3
-        cfg_layers = self._cfg["layers"]
+        cfg_layers = self._get_cfg()["layers"]
 
         for cfg_layer in cfg_layers:
-            # Initialize Conv Block
-            layers = cfg_layers[cfg_layer]
-            conv_block = ConvBlock(in_channels=in_channels, layers=layers)
 
-            # Update in channels
-            in_channels = conv_block.out_channels
+            # Get layer's kwargs
+            kwargs = cfg_layers[cfg_layer]
+
+            # Get layer
+            layer = cfg_layer.split("_")[0]
+            layer = get_layer(layer=layer)
+
+            # Append and update in channels
+            if not layer is nn.MaxPool2d:
+                # Append
+                kwargs["in_channels"] = in_channels
+
+                # Update
+                out_channels = kwargs["out_channels"]
+                in_channels = out_channels[-1] if isinstance(out_channels, list) else out_channels
+
+            # Initialize
+            layer = layer(**kwargs)
 
             # Append module
-            model.append(conv_block)
+            model.append(layer)
 
         return nn.Sequential(*model)
 
     # --------------------------------------------------------------------------------
-    def forward(self, x):
-        ...
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Perform forward pass on the  input tensor
+
+        Args:
+            x: (torch.Tensor): Input Tensor
+
+        Returns:
+            torch.Tensor: Output Tensor
+
+        """
+        return self.yolo(x)
 
     # --------------------------------------------------------------------------------
     def training_step(self):

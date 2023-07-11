@@ -1,28 +1,27 @@
-
 layers:
-  Conv2dBasic_1: {"out_channels": 64, "kernel_size": 7, "stride": 2},
-  MaxPool2d_1: { "kernel_size": 2, "stride": 2, },
+  Conv2dBasic_1: {"out_channels": 64, "kernel_size": 7, "stride": 2}
+  MaxPool2d_1: { "kernel_size": 2, "stride": 2, }
 
-  Conv2dBasic_2: { "out_channels": 192, "kernel_size": 3 },
-  MaxPool2d_2: { "kernel_size": 2, "stride": 2, },
+  Conv2dBasic_2: { "out_channels": 192, "kernel_size": 3 }
+  MaxPool2d_2: { "kernel_size": 2, "stride": 2, }
 
-  Conv2d13_3_1: { "out_channels": [ 128, 256 ] },
-  Conv2d13_3_2: { "out_channels": [ 256, 512 ] },
-  MaxPool2d_3: { "kernel_size": 2, "stride": 2, },
+  Conv2d13_3_1: { "out_channels": [ 128, 256 ] }
+  Conv2d13_3_2: { "out_channels": [ 256, 512 ] }
+  MaxPool2d_3: { "kernel_size": 2, "stride": 2, }
 
-  Conv2d13_4_1: { "out_channels": [ 256, 512 ] },
-  Conv2d13_4_2: { "out_channels": [ 256, 512 ] },
-  Conv2d13_4_3: { "out_channels": [ 256, 512 ] },
-  Conv2d13_4_4: { "out_channels": [ 256, 512 ] },
-  Conv2d13_4_5: { "out_channels": [ 512, 1024 ] },
-  MaxPool2d_4: { "kernel_size": 2, "stride": 2, },
+  Conv2d13_4_1: { "out_channels": [ 256, 512 ] }
+  Conv2d13_4_2: { "out_channels": [ 256, 512 ] }
+  Conv2d13_4_3: { "out_channels": [ 256, 512 ] }
+  Conv2d13_4_4: { "out_channels": [ 256, 512 ] }
+  Conv2d13_4_5: { "out_channels": [ 512, 1024 ] }
+  MaxPool2d_4: { "kernel_size": 2, "stride": 2, }
 
 
-  Conv2d13_5_1: { "out_channels": [ 512, 1024 ] },
-  Conv2d13_5_2: { "out_channels": [ 512, 1024 ] },
-  Conv2dBasic_5_3: { "out_channels": 1024, "kernel_size": 3 },
-  Conv2dBasic_5_4: { "out_channels": 1024, "kernel_size": 3, "stride": 2 },
+  Conv2d13_5_1: { "out_channels": [ 512, 1024 ] }
+  Conv2d13_5_2: { "out_channels": [ 512, 1024 ] }
+  Conv2dBasic_5_3: { "out_channels": 1024, "kernel_size": 3 }
+  Conv2dBasic_5_4: { "out_channels": 1024, "kernel_size": 3, "stride": 2 }
 
-  Conv2dBasic_6_1: { "out_channels": 1024, "kernel_size": 3 },
+  Conv2dBasic_6_1: { "out_channels": 1024, "kernel_size": 3 }
   Conv2dBasic_6_2: { "out_channels": 1024, "kernel_size": 3 }
 
