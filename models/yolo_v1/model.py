@@ -15,13 +15,31 @@ class YoloV1(L.LightningModule):
     """
 
     # --------------------------------------------------------------------------------
-    def __init__(self):
+    def __init__(self,
+                 num_bboxes: int = 2,
+                 num_classes: int = 20):
         """Initialize Yolo
+
+        Args:
+            num_bboxes: (int): Number of bounding boxes per cell
+            num_classes: (int): Number of classes
         """
         super().__init__()
 
+        # Yolo Attribs
+        self.num_classes = num_classes
+        self.num_bboxes = num_bboxes
+        self.num_cells = 7
+        self.num_cell_features = (self.num_bboxes * 5 + self.num_classes)
+
         # Initialize Model
         self.yolo = self._parse_model()
+        self.fc = nn.Sequential(nn.Flatten(),
+                                nn.Linear(in_features=(self.num_cells * self.num_cells * 1024),
+                                          out_features=4096),
+                                nn.ReLU(),
+                                nn.Linear(in_features=4096,
+                                          out_features=(self.num_cells * self.num_cells * self.num_cell_features)))
 
     # --------------------------------------------------------------------------------
     @staticmethod
@@ -78,6 +96,10 @@ class YoloV1(L.LightningModule):
         return nn.Sequential(*model)
 
     # --------------------------------------------------------------------------------
+    def _init_fc_layers(self):
+        ...
+
+    # --------------------------------------------------------------------------------
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Perform forward pass on the  input tensor
 
@@ -88,7 +110,7 @@ class YoloV1(L.LightningModule):
             torch.Tensor: Output Tensor
 
         """
-        return self.yolo(x)
+        return self.fc(self.yolo(x))
 
     # --------------------------------------------------------------------------------
     def training_step(self):
