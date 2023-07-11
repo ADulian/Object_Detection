@@ -37,7 +37,7 @@ class YoloV1(L.LightningModule):
         self.fc = nn.Sequential(nn.Flatten(),
                                 nn.Linear(in_features=(self.num_cells * self.num_cells * 1024),
                                           out_features=4096),
-                                nn.ReLU(),
+                                nn.LeakyReLU(negative_slope=0.1),
                                 nn.Linear(in_features=4096,
                                           out_features=(self.num_cells * self.num_cells * self.num_cell_features)))
 

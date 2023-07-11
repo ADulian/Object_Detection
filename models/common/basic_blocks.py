@@ -57,7 +57,7 @@ class Conv2dBasic(nn.Module):
             layers.append(nn.BatchNorm2d(num_features=out_channels))
 
         # Activation
-        layers.append(nn.ReLU())
+        layers.append(nn.LeakyReLU(negative_slope=0.1))
 
         # Init Sequential block
         self.block = nn.Sequential(*layers)
