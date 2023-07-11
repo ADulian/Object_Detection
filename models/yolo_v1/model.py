@@ -110,7 +110,13 @@ class YoloV1(L.LightningModule):
             torch.Tensor: Output Tensor
 
         """
-        return self.fc(self.yolo(x))
+
+        out = self.fc(self.yolo(x))
+
+        # Reshape so that the output = (cells * cells * num_features)
+        out = out.view(out.shape[0], self.num_cells, self.num_cells, self.num_cell_features)
+
+        return out
 
     # --------------------------------------------------------------------------------
     def training_step(self):
