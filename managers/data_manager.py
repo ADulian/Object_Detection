@@ -43,6 +43,13 @@ class DataManager(L.LightningDataModule):
 
         # General
         self._coco_root_path = path_check(coco_root_path)
+        self._shuffle = shuffle
+
+        self._pin_memory = pin_memory
+        self._num_workers = num_workers
+
+        self.num_classes = None
+        self.target_generator = None
 
         # Datasets specific
         self._train_set = None
@@ -53,27 +60,18 @@ class DataManager(L.LightningDataModule):
         self._val_batch_size = val_batch_size
         self._test_batch_size = test_batch_size
 
-        self._shuffle = shuffle
-
-        self._pin_memory = pin_memory
-        self._num_workers = num_workers
-
+        # Load Dataset
+        self._load_data()
 
         log.info("Data Manager Initialized")
 
-    # --------------------------------------------------------------------------------
-    def prepare_data(self) -> None:
-        ...
+
 
     # --------------------------------------------------------------------------------
-    def setup(self, stage: str = "") -> None:
-        """
-
-        Args:
-            stage: (str): Processing stage, e.g. "train"
+    def _load_data(self):
+        """Load Datasets
 
         """
-
         # Paths
         train_imgs_path = self._coco_root_path / "images/train2017"
         val_imgs_path = self._coco_root_path / "images/val2017"
@@ -90,6 +88,24 @@ class DataManager(L.LightningDataModule):
         self._val_set = CocoDataset(dataset_split=DatasetSplit.VALIDATION,
                                     imgs_path=val_imgs_path,
                                     annotations_file=val_annotations_file)
+
+        # Set number of classes
+        self.num_classes = len(self._val_set.classes)
+
+    # --------------------------------------------------------------------------------
+    def prepare_data(self) -> None:
+        """
+        """
+        ...
+
+    # --------------------------------------------------------------------------------
+    def setup(self, stage: str = "") -> None:
+        """Setup Datasets
+
+        Args:
+            stage: (str): Processing stage, e.g. "train"
+
+        """
 
     # --------------------------------------------------------------------------------
     def train_dataloader(self) -> DataLoader:

@@ -1,9 +1,9 @@
 import json
 import logging
-
 from pathlib import Path
 from collections import defaultdict
 
+import torch
 from torch.utils.data import Dataset
 
 from datasets.coco_data_sample import CocoDataSample
@@ -11,7 +11,6 @@ from datasets.base_classes import DatasetSplit
 from utils.io import load_image
 
 log = logging.getLogger("lightning")
-
 
 # --------------------------------------------------------------------------------
 class CocoDataset(Dataset):
@@ -34,7 +33,7 @@ class CocoDataset(Dataset):
 
         self._dataset_split = dataset_split
         self._imgs_path = imgs_path
-        self._data_samples, self._classes = self._load_data(annotations_file=annotations_file)
+        self._data_samples, self.classes = self._load_data(annotations_file=annotations_file)
 
         split = dataset_split.name[0] + dataset_split.name[1:].lower()
         log.info(f"{split} Coco Dataset Initialized")
@@ -110,6 +109,10 @@ class CocoDataset(Dataset):
 
         # Get bounding boxes
         bboxs = data_sample.get_bboxes()
+
+        # Target grid
+        # grid = torch.
+
 
         return img, bboxs
 
