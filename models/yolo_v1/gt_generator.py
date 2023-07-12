@@ -1,4 +1,5 @@
 import os
+import numpy as np
 
 from torch.utils.data import Dataset
 
@@ -21,6 +22,9 @@ class YoloV1GTGenerator(Dataset):
 
         # Dataset
         self._dataset = dataset
+        self._in_size = self._cfg["in_size"]
+        self._num_cells = self._cfg["num_cells"]
+        self._cell_size = self._in_size // self._num_cells
 
     # --------------------------------------------------------------------------------
     def __len__(self) -> int:
@@ -47,7 +51,28 @@ class YoloV1GTGenerator(Dataset):
         # Get data sample
         img, data_sample = self._dataset[idx]
 
-        # Create ground truth data
+        # Transform img
 
-        ...
+        # Generate ground truth for each annotation
+        num_features = 6 # BBox (4), Confidence (1),  Class (1)
+        grid = np.zeros((self._num_cells, self._num_cells, num_features), dtype=float)
 
+        for annotation in data_sample.annotations:
+            # Get bbox
+            x, y, w, h = annotation.bbox
+
+            # x, y to mid_x, mid_y
+            x, y = x + (w / 2), y + (h / 2)
+
+            # Compute cell position
+            x_cell, y_cell = x // self._cell_size, y // self._cell_size
+            x_cell, y_cell = int(min(x_cell, self._num_cells)), int(min(y_cell, self._num_cells))
+
+            # Normalize bbox
+            x, y = (x / self._cell_size) - x_cell, (y / self._cell_size) - y_cell
+            w, h = w / self._in_size, h / self._in_size
+
+            # Place information in a grid
+            grid[x_cell, y_cell] = np.array([x, y, w ,h , 1, annotation.class_id], dtype=float)
+
+        return img, grid
