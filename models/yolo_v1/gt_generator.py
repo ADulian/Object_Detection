@@ -51,6 +51,7 @@ class YoloV1GTGenerator(Dataset):
         # Get data sample
         img, data_sample = self._dataset[idx]
 
+        # ToDo :: Transform such that aspect ratio is preserverd
         # Transform img
 
         # Generate ground truth for each annotation
@@ -63,6 +64,10 @@ class YoloV1GTGenerator(Dataset):
 
             # x, y to mid_x, mid_y
             x, y = x + (w / 2), y + (h / 2)
+
+            # Skip if mid falls outside of image boundries
+            if x > self._in_size or y > self._in_size:
+                continue
 
             # Compute cell position
             x_cell, y_cell = x // self._cell_size, y // self._cell_size
