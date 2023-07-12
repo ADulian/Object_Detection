@@ -1,12 +1,10 @@
 import os
-import yaml
 import torch
 import lightning as L
 
 from torch import nn
 
-from utils.io import path_check
-from models.common.utils import get_layer
+from models.common.tools import get_layer, get_cfg
 
 # --------------------------------------------------------------------------------
 class YoloV1(L.LightningModule):
@@ -25,7 +23,7 @@ class YoloV1(L.LightningModule):
         super().__init__()
 
         # Cfg
-        self._cfg = self._get_cfg()
+        self._cfg = get_cfg(root_path=os.path.dirname(os.path.abspath(__file__)))
 
         # Yolo Attribs
         self.num_classes = num_classes
@@ -41,23 +39,6 @@ class YoloV1(L.LightningModule):
                                 nn.LeakyReLU(negative_slope=0.1),
                                 nn.Linear(in_features=4096,
                                           out_features=(self.num_cells * self.num_cells * self.num_cell_features)))
-
-    # --------------------------------------------------------------------------------
-    @staticmethod
-    def _get_cfg() -> dict:
-        """Get config
-
-        Returns:
-            dict: model config
-        """
-
-        root_path = path_check(os.path.dirname(os.path.abspath(__file__)))
-        cfg = root_path / "config.yaml"
-
-        with open(cfg, "r") as f:
-            cfg = yaml.safe_load(f)
-
-        return cfg
 
     # --------------------------------------------------------------------------------
     def _parse_model(self) -> nn.Sequential:
