@@ -16,20 +16,21 @@ class YoloV1(L.LightningModule):
 
     # --------------------------------------------------------------------------------
     def __init__(self,
-                 num_bboxes: int = 2,
                  num_classes: int = 20):
         """Initialize Yolo
 
         Args:
-            num_bboxes: (int): Number of bounding boxes per cell
             num_classes: (int): Number of classes
         """
         super().__init__()
 
+        # Cfg
+        self._cfg = self._get_cfg()
+
         # Yolo Attribs
         self.num_classes = num_classes
-        self.num_bboxes = num_bboxes
-        self.num_cells = 7
+        self.num_bboxes = self._cfg["num_bboxes"]
+        self.num_cells = self._cfg["num_cells"]
         self.num_cell_features = (self.num_bboxes * 5 + self.num_classes)
 
         # Initialize Model
@@ -67,7 +68,7 @@ class YoloV1(L.LightningModule):
         """
         model = []
         in_channels = 3
-        cfg_layers = self._get_cfg()["layers"]
+        cfg_layers = self._cfg["layers"]
 
         for cfg_layer in cfg_layers:
 
@@ -94,10 +95,6 @@ class YoloV1(L.LightningModule):
             model.append(layer)
 
         return nn.Sequential(*model)
-
-    # --------------------------------------------------------------------------------
-    def _init_fc_layers(self):
-        ...
 
     # --------------------------------------------------------------------------------
     def forward(self, x: torch.Tensor) -> torch.Tensor:
