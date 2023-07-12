@@ -51,5 +51,5 @@ class CocoAnnotation:
         self.image_id = annotation["image_id"]
         self.is_crowd = annotation["iscrowd"]
         self.area = annotation["area"]
-        self.category = annotation["category_id"]
+        self.class_id = annotation["category_id"]
         self.bbox = np.array(annotation["bbox"], dtype=float)

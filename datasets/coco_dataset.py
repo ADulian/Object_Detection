@@ -34,14 +34,14 @@ class CocoDataset(Dataset):
 
         self._dataset_split = dataset_split
         self._imgs_path = imgs_path
-        self._data_samples = self._load_data(annotations_file=annotations_file)
+        self._data_samples, self._classes = self._load_data(annotations_file=annotations_file)
 
         split = dataset_split.name[0] + dataset_split.name[1:].lower()
         log.info(f"{split} Coco Dataset Initialized")
 
     # --------------------------------------------------------------------------------
     @staticmethod
-    def _load_data(annotations_file: (Path | None) = None) -> list[CocoDataSample]:
+    def _load_data(annotations_file: (Path | None) = None) -> tuple[list[CocoDataSample], dict[int, str]]:
 
         """Load img and annotation data for coco
 
@@ -49,13 +49,16 @@ class CocoDataset(Dataset):
             annotations_file: (Path | None): Root path to annotations if file exists
 
         Returns:
-            list[CocoDataSample]: List of Coco data samples
+            tuple[list[CocoDataSample], dict[int, str]]: List of Coco data samples, Class mapping
 
         """
 
         # Json Data
         with open(annotations_file, "rb") as f:
             data_json = json.load(f)
+
+        # Class mapping
+        classes = { cat["id"] : cat["name"] for cat in data_json["categories"]}
 
         imgs_data_json, annotations_data_json = data_json["images"], data_json["annotations"]
 
@@ -76,7 +79,7 @@ class CocoDataset(Dataset):
                                        annotation_data=annotations_data[img_key])
                         for img_key, img_data in imgs_data.items()]
 
-        return data_samples
+        return data_samples, classes
 
     # --------------------------------------------------------------------------------
     def __len__(self) -> int:
