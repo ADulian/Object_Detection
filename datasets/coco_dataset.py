@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 from collections import defaultdict
 
-import torch
+import PIL.Image
 from torch.utils.data import Dataset
 
 from datasets.coco_data_sample import CocoDataSample
@@ -90,13 +90,14 @@ class CocoDataset(Dataset):
         return len(self._data_samples)
 
     # --------------------------------------------------------------------------------
-    def __getitem__(self, idx: int):
+    def __getitem__(self, idx: int) -> tuple[PIL.Image.Image, CocoDataSample]:
         """
 
         Args:
             idx: (int): Index of the sample
 
         Returns:
+            tuple[PIL.Image.Image, CocoDataSample]: An image and a data sample information
 
         """
 
@@ -107,15 +108,4 @@ class CocoDataset(Dataset):
         img_path = Path(self._imgs_path) / data_sample.img_file_name
         img = load_image(path=img_path)
 
-        # Get bounding boxes
-        bboxs = data_sample.get_bboxes()
-
-        # Target grid
-        # grid = torch.
-
-
-        return img, bboxs
-
-
-
-
+        return img, data_sample

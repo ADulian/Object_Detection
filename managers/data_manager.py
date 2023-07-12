@@ -65,8 +65,6 @@ class DataManager(L.LightningDataModule):
 
         log.info("Data Manager Initialized")
 
-
-
     # --------------------------------------------------------------------------------
     def _load_data(self):
         """Load Datasets
