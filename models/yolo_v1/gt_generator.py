@@ -51,7 +51,8 @@ class YoloV1GTGenerator(Dataset):
         # Get data sample
         img, data_sample = self._dataset[idx]
 
-        # ToDo :: Transform such that aspect ratio is preserverd
+        # ToDo :: Resize such that aspect ratio is preserverd
+        # ToDO :: Bounding box needs to be resized as well (smaller images will get upscaled)
         # Transform img
 
         # Generate ground truth for each annotation
