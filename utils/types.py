@@ -1,6 +1,7 @@
 import numpy as np
 from enum import Enum
 from typing import TypedDict
+from PIL import Image, ImageDraw
 
 class BBoxFormat(Enum):
     """Bounding Box Format
@@ -159,3 +160,14 @@ class BBox:
         self.bbox = bbox
         self.bbox_format = bbox_format
         self.bbox_parts = self._set_bbox_parts()
+
+    def draw_box(self, img: Image.Image):
+        draw = ImageDraw.Draw(img)
+
+        # Define the coordinates of the rectangle (left, top, right, bottom)
+        bbox = self.get_bbox(bbox_format=BBoxFormat.XYXY).astype(int)
+
+        # Draw the rectangle on the image
+        draw.rectangle(bbox, outline="red", width=100)
+        img.show()
+        return img

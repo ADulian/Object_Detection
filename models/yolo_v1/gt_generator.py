@@ -88,6 +88,11 @@ class YoloV1GTGenerator(Dataset):
             class_ids.append(ann.class_id)
             bboxs.append(ann.bbox)
 
+        for bbox in bboxs:
+            img = bbox.draw_box(img)
+            ...
+
+        img.show()
         # Preprocess image
         new_img, bboxs = self._preprocess(target_size=512, img=img, bboxs=bboxs)
 
