@@ -132,3 +132,30 @@ class BBox:
             return np.concatenate((self.bbox_parts["top_left"], self.bbox_parts["width_height"]), dtype=float)
         elif bbox_format == BBoxFormat.MID_X_MID_Y_WH:
             return np.concatenate((self.bbox_parts["mid_x_y"], self.bbox_parts["width_height"]), dtype=float)
+
+    # --------------------------------------------------------------------------------
+    def clamp_bbox(self,
+                   max_value):
+
+        # Get bounding box in correct formatS
+        bbox = self.get_bbox(bbox_format=BBoxFormat.XYXY)
+
+        # Clamp xy1
+        bbox[0] = max(0, bbox[0])
+        bbox[1] = max(0, bbox[1])
+
+        # Clamp xy2
+        bbox[2] = max(max_value, bbox[2])
+        bbox[3] = max(max_value, bbox[2])
+
+        # Update Bounding box
+        self.update_bbox(bbox=bbox, bbox_format=BBoxFormat.XYXY)
+
+    # --------------------------------------------------------------------------------
+    def update_bbox(self,
+                    bbox: np.ndarray,
+                    bbox_format: BBoxFormat):
+
+        self.bbox = bbox
+        self.bbox_format = bbox_format
+        self.bbox_parts = self._set_bbox_parts()
