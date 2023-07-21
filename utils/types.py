@@ -10,21 +10,21 @@ class BBoxFormat(Enum):
         - xywh - Left upper corner / Width / Height
         - mid_x_mid_y_wh - Mid X/ Mid Y/ Width/ Height
     """
-    XYXY: 1
+    XYXY = 1
     """
     *-----|
     |     |
     |_____*
     """
 
-    XYWH: 2
+    XYWH = 2
     """
     *-----^
     |     ^
     |>>>>>^
     """
 
-    MID_X_MID_Y_WH: 3
+    MID_X_MID_Y_WH = 3
     """
     |-----^
     |  *  ^
@@ -59,8 +59,8 @@ class BBox:
         self.bottom_y = 0.0
         self.mid_x = 0.0
         self.mid_y = 0.0
-        self.bbox_parts = self._set_bbox_parts()
         self.bbox_format = bbox_format
+        self.bbox_parts = self._set_bbox_parts()
 
     # --------------------------------------------------------------------------------
     def _set_bbox_parts(self) -> BBoxParts:
@@ -81,13 +81,13 @@ class BBox:
             width, height = bottom_right[0] - top_left[0], top_left[1] - bottom_right[1]
             mid_x_y = np.array(bottom_right[0] - (width / 2), bottom_right[1] - (height / 2), dtype=float)
 
-        elif self.bbox == BBoxFormat.XYWH:
+        elif self.bbox_format == BBoxFormat.XYWH:
             top_left = self.bbox[:2]
             width, height = self.bbox[2], self.bbox[3]
             bottom_right = np.array([top_left[0] + width, top_left[1] + height], dtype=float)
-            mid_x_y = np.array(bottom_right[0] - (width / 2), bottom_right[1] - (height / 2), dtype=float)
+            mid_x_y = np.array([bottom_right[0] - (width / 2), bottom_right[1] - (height / 2)], dtype=float)
 
-        elif self.bbox == BBoxFormat.MID_X_MID_Y_WH:
+        elif self.bbox_format == BBoxFormat.MID_X_MID_Y_WH:
             mid_x_y = self.bbox[:2]
             width, height = self.bbox[2], self.bbox[3]
             top_left = np.array([mid_x_y[0] - (width / 2), mid_x_y[1] - (height / 2)], dtype=float)
