@@ -1,6 +1,8 @@
 import os
 import numpy as np
+from typing import Callable
 
+from torchvision.transforms.transforms import Compose, ToTensor, Normalize
 from torch.utils.data import Dataset
 
 from datasets.coco_dataset import CocoDataset
@@ -13,8 +15,15 @@ class YoloV1GTGenerator(Dataset):
 
     # --------------------------------------------------------------------------------
     def __init__(self,
-                 dataset: CocoDataset):
+                 dataset: CocoDataset,
+                 transforms: (list[Callable] | None) = None,
+                 transforms_on: bool = True):
         """Initialize generator
+
+        Args:
+            dataset: (CocoDataset): Dataset
+            transforms: (list[Callable] | None): list of transforms
+            transforms_on: (bool): Use transforms
         """
 
         # Cfg
@@ -25,6 +34,24 @@ class YoloV1GTGenerator(Dataset):
         self._in_size = self._cfg["in_size"]
         self._num_cells = self._cfg["num_cells"]
         self._cell_size = self._in_size // self._num_cells
+
+        # Transforms
+        self._transforms_on = transforms_on
+        self._transforms = transforms
+
+    # --------------------------------------------------------------------------------
+    @property
+    def transforms(self):
+        """Get (init if None) transforms
+        """
+        if self._transforms_on:
+            if self._transforms is None:
+                self._transforms = Compose(
+                    [ToTensor(),
+                     Normalize(.5, 0.5)]
+                )
+
+        return self._transforms
 
     # --------------------------------------------------------------------------------
     def __len__(self) -> int:
@@ -54,6 +81,9 @@ class YoloV1GTGenerator(Dataset):
         # ToDo :: Resize such that aspect ratio is preserverd
         # ToDO :: Bounding box needs to be resized as well (smaller images will get upscaled)
         # Transform img
+        if self.transforms is not None:
+            img = self.transforms(img)
+
 
         # Generate ground truth for each annotation
         num_features = 6 # BBox (4), Confidence (1),  Class (1)
