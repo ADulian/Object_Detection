@@ -79,7 +79,7 @@ class BBox:
             top_left = self.bbox[:2]
             bottom_right = self.bbox[2:]
             width, height = bottom_right[0] - top_left[0], top_left[1] - bottom_right[1]
-            mid_x_y = np.array(bottom_right[0] - (width / 2), bottom_right[1] - (height / 2), dtype=float)
+            mid_x_y = np.array([bottom_right[0] - (width / 2), bottom_right[1] - (height / 2)], dtype=float)
 
         elif self.bbox_format == BBoxFormat.XYWH:
             top_left = self.bbox[:2]

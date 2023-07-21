@@ -1,5 +1,6 @@
 import numpy as np
 
+from utils.types import BBox, BBoxFormat
 # --------------------------------------------------------------------------------
 class CocoDataSample:
     """Wrapper for Coco Samples
@@ -52,4 +53,5 @@ class CocoAnnotation:
         self.is_crowd = annotation["iscrowd"]
         self.area = annotation["area"]
         self.class_id = annotation["category_id"]
-        self.bbox = np.array(annotation["bbox"], dtype=float)
+        self.bbox = BBox(bbox=np.array(annotation["bbox"], dtype=float),
+                         bbox_format=BBoxFormat.XYWH)
