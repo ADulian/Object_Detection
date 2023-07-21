@@ -39,12 +39,14 @@ class BBoxParts(TypedDict):
 
 # --------------------------------------------------------------------------------
 class BBox:
+    """A class that defines bounding box and it's individual parts
+    """
 
     # --------------------------------------------------------------------------------
     def __init__(self,
                  bbox: np.ndarray,
                  bbox_format: BBoxFormat = BBoxFormat.XYWH):
-        """
+        """Initialize bounding box object
 
         """
 
@@ -108,16 +110,21 @@ class BBox:
         return bbox_parts
 
     # --------------------------------------------------------------------------------
-    def is_empty(self):
+    def is_empty(self) -> bool:
+        """Returns True if all entries are empty
+        """
         return bool(self.bbox.sum())
 
     # --------------------------------------------------------------------------------
     def get_bbox(self,
-                 bbox_format: BBoxFormat = BBoxFormat.XYWH):
+                 bbox_format: BBoxFormat = BBoxFormat.XYWH) -> np.ndarray:
         """
 
         Args:
             bbox_format: (BBoxFormat): Desired Bounding Box format
+
+        Returns:
+            np.ndarray: Returns bounding box as an numpy array given a desired format
         """
         if bbox_format == BBoxFormat.XYXY:
             return np.concatenate((self.bbox_parts["top_left"], self.bbox_parts["bottom_right"]), dtype=float)
