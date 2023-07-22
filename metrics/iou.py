@@ -2,6 +2,7 @@ import numpy as np
 import torch
 
 from custom_types.bbox import BBoxFormat
+from utils.math import torch_epsilon
 
 # --------------------------------------------------------------------------------
 def to_xyxy(bbox: torch.Tensor,
@@ -98,6 +99,6 @@ def iou(bbox_1: (torch.Tensor | np.ndarray),
     union = bbox_1_area + bbox_2_area - intersection
 
     # Intersection over Union
-    intersection_over_union = intersection / union
+    intersection_over_union = intersection / (union + torch_epsilon(tensor=union))
 
     return intersection_over_union

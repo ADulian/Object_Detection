@@ -1,6 +1,7 @@
 import torch
 
 from metrics.iou import iou
+from custom_types.bbox import BBoxFormat
 
 # --------------------------------------------------------------------------------
 class YoloV1Criterion:
@@ -50,7 +51,11 @@ class YoloV1Criterion:
         y_hat_bboxs_1 = y_hat[:, :4]
         y_hat_bboxs_2 = y_hat[:, 5:9]
 
-        iou(bbox_1=y_hat_bboxs_1[0], bbox_2=y_hat_bboxs_2[0])
+        import numpy as np
+        bbox_1 = np.array([150., 250., 100., 50])
+        bbox_2 = np.array([200., 270., 100., 50])
+
+        iou(bbox_1=bbox_1, bbox_2=bbox_2, bbox_format=BBoxFormat.MID_X_MID_Y_WH)
 
 
         return torch.Tensor([0.0])
