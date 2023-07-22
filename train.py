@@ -1,12 +1,9 @@
 import logging
 
 from managers.data_manager import DataManager
+from managers.model_manager import ModelManager
+from managers.train_manager import TrainManager
 from utils.argparser import parse_args
-
-
-# --- Temp
-from models.yolo_v1.model import YoloV1
-from models.yolo_v1.gt_generator import YoloV1GTGenerator
 
 # Setup Logging
 log = logging.getLogger("lightning")
@@ -31,16 +28,15 @@ def main():
                      pin_memory=args.pin_memory,
                      num_workers=args.num_workers)
 
-    # Init Model
-    model = YoloV1(num_classes=dm.num_classes)
+    # Init Model Manager
+    mm = ModelManager(num_classes=dm.num_classes)
 
-    # Init Target Generator
-    gt = YoloV1GTGenerator(dm._val_set)
+    # Init Trainer Manager
+    tm = TrainManager(data_manager=dm,
+                      model_manager=mm)
 
-    for g in gt:
-        ...
-    # next(iter(gt))
-
+    # Train
+    tm()
 
 
 # --------------------------------------------------------------------------------
