@@ -17,8 +17,6 @@ def main():
     # Parse arguments
     args = parse_args()
 
-
-
     # Init Data Manager
     dm = DataManager(coco_root_path=args.coco_path,
                      train_batch_size=args.train_bs,
