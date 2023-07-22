@@ -7,8 +7,8 @@ from torch.utils.data import Dataset
 
 from datasets.coco_dataset import CocoDataset
 from models.common.tools import get_cfg
-from image_processing.crop import PILResizePreserveRatio
-from utils.types import BBoxFormat
+from image_processing.resize_preserve_ratio import PILResizePreserveRatio
+from custom_types.bbox import BBoxFormat
 
 # --------------------------------------------------------------------------------
 class YoloV1GTGenerator(Dataset):
@@ -88,14 +88,13 @@ class YoloV1GTGenerator(Dataset):
             class_ids.append(ann.class_id)
             bboxs.append(ann.bbox)
 
-        for bbox in bboxs:
-            img = bbox.draw_box(img)
-            ...
-
-        img.show()
         # Preprocess image
-        new_img, bboxs = self._preprocess(target_size=512, img=img, bboxs=bboxs)
+        new_img, bboxs = self._preprocess(target_size=self._in_size, img=img, bboxs=bboxs)
 
+        for bbox in bboxs:
+            bbox.draw_box(new_img)
+
+        new_img.show()
         # Transform img
         if self.transforms is not None:
             img = self.transforms(img)

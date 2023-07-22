@@ -1,6 +1,7 @@
 import numpy as np
 
-from utils.types import BBox, BBoxFormat
+from custom_types.bbox import BBox, BBoxFormat
+
 # --------------------------------------------------------------------------------
 class CocoDataSample:
     """Wrapper for Coco Samples

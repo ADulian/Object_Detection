@@ -126,13 +126,13 @@ class BBox:
 
     # --------------------------------------------------------------------------------
     def clamp_bbox(self,
-                   max_width: int,
-                   max_height: int):
+                   max_width: float,
+                   max_height: float):
         """Clamp bounding box with (0,0) - (max_width, max_height)
 
         Args:
-            max_width: (int): Max width boundary
-            max_height: (int): Max height boundary
+            max_width: (float): Max width boundary
+            max_height: (float): Max height boundary
 
         """
 
@@ -144,8 +144,8 @@ class BBox:
         bbox[1] = max(0, bbox[1])
 
         # Clamp xy2
-        bbox[2] = max(max_width, bbox[2])
-        bbox[3] = max(max_height, bbox[2])
+        bbox[2] = min(max_width, bbox[2])
+        bbox[3] = min(max_height, bbox[3])
 
         # Update Bounding box
         self.update_bbox(bbox=bbox, bbox_format=BBoxFormat.XYXY)
