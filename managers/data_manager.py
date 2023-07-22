@@ -1,7 +1,8 @@
 import logging
+from pathlib import Path
+from typing import Type
 
 import lightning as L
-from pathlib import Path
 from torch.utils.data import DataLoader, Dataset
 
 from datasets.coco_dataset import CocoDataset
@@ -50,7 +51,7 @@ class DataManager(L.LightningDataModule):
         self._num_workers = num_workers
 
         self.num_classes = None
-        self.target_generator = None
+        self._gt_generator = None
 
         # Datasets specific
         self._train_set = None
@@ -63,7 +64,6 @@ class DataManager(L.LightningDataModule):
 
         # Load Dataset
         self._load_data()
-
 
         log.info("Data Manager Initialized")
 
@@ -93,10 +93,21 @@ class DataManager(L.LightningDataModule):
         self.num_classes = len(self._val_set.classes)
 
     # --------------------------------------------------------------------------------
+    def update(self,
+               gt_generator: Type[YoloV1GTGenerator]):
+        """Update Data Manager
+
+        Args:
+            gt_generator: (Type[YoloV1GTGenerator]): A reference to the ground truth generator
+        """
+
+        if self._gt_generator is None:
+            self._gt_generator = gt_generator
+
+    # --------------------------------------------------------------------------------
     def prepare_data(self) -> None:
+        """Prepare Data
         """
-        """
-        ...
 
     # --------------------------------------------------------------------------------
     def setup(self, stage: str = "") -> None:
@@ -108,14 +119,17 @@ class DataManager(L.LightningDataModule):
         """
 
         # Wrap Coco datasets into Ground Truth Generator
+        if self._gt_generator is None:
+            raise ValueError("Ground truth generator not set. Tip: Ensure to call update before setup.")
+
         if self._train_set is not None:
-            self._train_set = YoloV1GTGenerator(dataset=self._train_set)
+            self._train_set = self._gt_generator(dataset=self._train_set)
 
         if self._val_set is not None:
-            self._val_set = YoloV1GTGenerator(dataset=self._val_set)
+            self._val_set = self._gt_generator(dataset=self._val_set)
 
         if self._test_set is not None:
-            self._test_set = YoloV1GTGenerator(dataset=self._test_set)
+            self._test_set = self._gt_generator(dataset=self._test_set)
 
     # --------------------------------------------------------------------------------
     def train_dataloader(self) -> DataLoader:
@@ -124,8 +138,11 @@ class DataManager(L.LightningDataModule):
         Returns:
             DataLoader: Train data loader object
         """
-        return DataLoader(dataset=self._train_set, batch_size=self._train_batch_size, shuffle=self._shuffle,
-                          pin_memory=self._pin_memory, num_workers=self._num_workers)
+        if self._train_set is not None:
+            return DataLoader(dataset=self._train_set, batch_size=self._train_batch_size, shuffle=self._shuffle,
+                              pin_memory=self._pin_memory, num_workers=self._num_workers)
+        else:
+            raise ValueError("Train set is None!")
 
     # --------------------------------------------------------------------------------
     def val_dataloader(self) -> DataLoader:
@@ -134,8 +151,11 @@ class DataManager(L.LightningDataModule):
         Returns:
             DataLoader: Val data loader object
         """
-        return DataLoader(dataset=self._val_set, batch_size=self._val_batch_size, shuffle=False,
-                          pin_memory=self._pin_memory, num_workers=self._num_workers)
+        if self._val_set is not None:
+            return DataLoader(dataset=self._val_set, batch_size=self._val_batch_size, shuffle=False,
+                              pin_memory=self._pin_memory, num_workers=self._num_workers)
+        else:
+            raise ValueError("Validation set is None!")
 
     # --------------------------------------------------------------------------------
     def test_dataloader(self) -> DataLoader:
@@ -144,10 +164,6 @@ class DataManager(L.LightningDataModule):
         Returns:
             DataLoader: Test data loader object
         """
-        return DataLoader(dataset=self._test_set, batch_size=self._test_batch_size, shuffle=False,
-                          pin_memory=self._pin_memory, num_workers=self._num_workers)
-
-
-
-
-
+        if self._test_set is not None: # Optional
+            return DataLoader(dataset=self._test_set, batch_size=self._test_batch_size, shuffle=False,
+                              pin_memory=self._pin_memory, num_workers=self._num_workers)
