@@ -81,7 +81,7 @@ class YoloV1GTGenerator(Dataset):
         # Get data sample
         img, data_sample = self._dataset[idx]
 
-        # Get other relevant data
+        # Get relevant data
         class_ids = []
         bboxs = []
         for ann in data_sample.annotations:
@@ -89,12 +89,8 @@ class YoloV1GTGenerator(Dataset):
             bboxs.append(ann.bbox)
 
         # Preprocess image
-        new_img, bboxs = self._preprocess(target_size=self._in_size, img=img, bboxs=bboxs)
+        img, bboxs = self._preprocess(target_size=self._in_size, img=img, bboxs=bboxs)
 
-        for bbox in bboxs:
-            bbox.draw_box(new_img)
-
-        new_img.show()
         # Transform img
         if self.transforms is not None:
             img = self.transforms(img)
