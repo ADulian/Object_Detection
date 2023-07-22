@@ -36,7 +36,7 @@ class CocoDataset(Dataset):
         self._data_samples, self.classes = self._load_data(annotations_file=annotations_file)
 
         split = dataset_split.name[0] + dataset_split.name[1:].lower()
-        log.info(f"{split} Coco Dataset Initialized")
+        log.info(f"{split} Coco Dataset Initialised")
 
     # --------------------------------------------------------------------------------
     @staticmethod

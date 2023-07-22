@@ -97,11 +97,11 @@ class YoloV1(L.LightningModule):
         return out
 
     # --------------------------------------------------------------------------------
-    def training_step(self):
+    def training_step(self, batch, batch_idx):
         ...
 
     # --------------------------------------------------------------------------------
-    def validation_step(self):
+    def validation_step(self, batch, batch_idx):
         ...
 
     # --------------------------------------------------------------------------------
@@ -111,3 +111,9 @@ class YoloV1(L.LightningModule):
     # --------------------------------------------------------------------------------
     def prediction_step(self):
         ...
+
+    # --------------------------------------------------------------------------------
+    def __str__(self):
+        """String representation of the class
+        """
+        return "Yolo V1"

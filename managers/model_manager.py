@@ -1,7 +1,10 @@
+import logging
 from typing import Type
 
 from models.yolo_v1.model import YoloV1
 from models.yolo_v1.gt_generator import YoloV1GTGenerator
+
+log = logging.getLogger("lightning")
 
 # --------------------------------------------------------------------------------
 class ModelManager:
@@ -19,6 +22,8 @@ class ModelManager:
 
         self.model, self.gt_generator = self._init_model(num_classes=num_classes)
 
+        log.info("Model Manager Initialised")
+
     # --------------------------------------------------------------------------------
     def _init_model(self,
                     num_classes: int) -> tuple[YoloV1, Type[YoloV1GTGenerator]]:
@@ -27,7 +32,10 @@ class ModelManager:
             num_classes: (int): Number of classes for Yolo prediction
         """
 
+
         model = YoloV1(num_classes=num_classes)
+
+        log.info(f"{model} Initialised")
 
         return model, YoloV1GTGenerator
 

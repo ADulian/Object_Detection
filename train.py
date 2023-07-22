@@ -31,7 +31,10 @@ def main():
 
     # Init Trainer Manager
     tm = TrainManager(data_manager=dm,
-                      model_manager=mm)
+                      model_manager=mm,
+                      epochs=args.epochs,
+                      accelerator=args.accelerator,
+                      devices=args.devices)
 
     # Train
     tm()

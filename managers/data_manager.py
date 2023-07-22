@@ -65,13 +65,15 @@ class DataManager(L.LightningDataModule):
         # Load Dataset
         self._load_data()
 
-        log.info("Data Manager Initialized")
+        log.info("Data Manager Initialised")
 
     # --------------------------------------------------------------------------------
     def _load_data(self):
         """Load Datasets
 
         """
+        log.info(f"Loading dataset from {self._coco_root_path}")
+
         # Paths
         train_imgs_path = self._coco_root_path / "images/train2017"
         val_imgs_path = self._coco_root_path / "images/val2017"
@@ -88,6 +90,9 @@ class DataManager(L.LightningDataModule):
         self._val_set = CocoDataset(dataset_split=DatasetSplit.VALIDATION,
                                     imgs_path=val_imgs_path,
                                     annotations_file=val_annotations_file)
+
+        # Temp for debugging
+        self._train_set = self._val_set
 
         # Set number of classes
         self.num_classes = len(self._val_set.classes)
@@ -121,6 +126,9 @@ class DataManager(L.LightningDataModule):
         # Wrap Coco datasets into Ground Truth Generator
         if self._gt_generator is None:
             raise ValueError("Ground truth generator not set. Tip: Ensure to call update before setup.")
+
+        # Type hint
+        self._gt_generator: Type[YoloV1GTGenerator]
 
         if self._train_set is not None:
             self._train_set = self._gt_generator(dataset=self._train_set)
