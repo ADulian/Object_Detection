@@ -166,6 +166,7 @@ class BBox:
         self.bbox_format = bbox_format
         self.bbox_parts = self._set_bbox_parts()
 
+    # --------------------------------------------------------------------------------
     def draw_box(self, img: Image.Image):
         """Draw a bounding box on the PIL Image
 
