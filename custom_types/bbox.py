@@ -101,7 +101,7 @@ class BBox:
     # --------------------------------------------------------------------------------
     def get_bbox(self,
                  bbox_format: BBoxFormat = BBoxFormat.XYWH) -> np.ndarray:
-        """
+        """Get bounding box as a numpy array with 4 elements given a desired format
 
         Args:
             bbox_format: (BBoxFormat): Desired Bounding Box format
