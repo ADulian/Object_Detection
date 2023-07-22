@@ -2,11 +2,12 @@ import logging
 
 import lightning as L
 from pathlib import Path
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Dataset
 
 from datasets.coco_dataset import CocoDataset
 from datasets.base_classes import DatasetSplit
 from utils.io import path_check
+from models.yolo_v1.gt_generator import YoloV1GTGenerator
 
 log = logging.getLogger("lightning")
 
@@ -63,6 +64,7 @@ class DataManager(L.LightningDataModule):
         # Load Dataset
         self._load_data()
 
+
         log.info("Data Manager Initialized")
 
     # --------------------------------------------------------------------------------
@@ -104,6 +106,16 @@ class DataManager(L.LightningDataModule):
             stage: (str): Processing stage, e.g. "train"
 
         """
+
+        # Wrap Coco datasets into Ground Truth Generator
+        if self._train_set is not None:
+            self._train_set = YoloV1GTGenerator(dataset=self._train_set)
+
+        if self._val_set is not None:
+            self._val_set = YoloV1GTGenerator(dataset=self._val_set)
+
+        if self._test_set is not None:
+            self._test_set = YoloV1GTGenerator(dataset=self._test_set)
 
     # --------------------------------------------------------------------------------
     def train_dataloader(self) -> DataLoader:
