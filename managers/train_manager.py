@@ -47,5 +47,4 @@ class TrainManager:
 
         # Fit the model
         self._trainer.fit(model=self._model_manager.model,
-                          train_dataloaders=self._data_manager.train_dataloader(),
-                          val_dataloaders=self._data_manager.val_dataloader())
+                          datamodule=self._data_manager)

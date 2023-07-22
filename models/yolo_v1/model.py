@@ -100,52 +100,65 @@ class YoloV1(ModelBase):
         return out
 
     # --------------------------------------------------------------------------------
+    def common_step(self,
+                    batch: list[torch.Tensor]):
+        """Common Step used by training and validation
+
+        Args:
+            batch: (list[torch.Tensor]): A list with batch of data
+        """
+
+        # Split the batch
+        x, y = batch
+
+        # Forward Pass
+        y_hat = self(x=x)
+
+        # Compute loss
+
+        return 0
+
+    # --------------------------------------------------------------------------------
     def training_step(self,
-                      batch: torch.Tensor,
-                      batch_idx: int):
+                      batch: list[torch.Tensor],
+                      *args, **kwargs):
         """Training Step
 
         Args:
-            batch: (torch.Tensor): batch of data
-            batch_idx: (int): Batch index
+            batch: (list[torch.Tensor]): A list with batch of data
         """
-        raise NotImplementedError("Training step not implemented")
+        return self.common_step(batch=batch)
 
     # --------------------------------------------------------------------------------
     def validation_step(self,
-                        batch: torch.Tensor,
-                        batch_idx: int):
+                        batch: list[torch.Tensor],
+                        *args, **kwargs):
         """Validation Step
 
         Args:
-            batch: (torch.Tensor): batch of data
-            batch_idx: (int): Batch index
+            batch: (list[torch.Tensor]): A list with batch of data
         """
-        raise NotImplementedError("Validation step not implemented")
+        return self.common_step(batch=batch)
 
     # --------------------------------------------------------------------------------
     def test_step(self,
                   batch: torch.Tensor,
-                  batch_idx: int):
+                  *args, **kwargs):
         """Test Step
 
         Args:
             batch: (torch.Tensor): batch of data
-            batch_idx: (int): Batch index
         """
         raise NotImplementedError("Test step not implemented")
 
     # --------------------------------------------------------------------------------
     def predict_step(self,
                      batch: Any,
-                     batch_idx: int,
-                     dataloader_idx: int = 0):
+                     *args, **kwargs):
         """Prediction Step
 
         Args:
             batch: (Any): batch of data
-            batch_idx: (int): Batch index
-            dataloader_idx: (int): Index of the current data loader
         """
         raise NotImplementedError("Prediction step not implemented")
 
