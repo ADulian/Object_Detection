@@ -51,7 +51,7 @@ class YoloV1GTGenerator(Dataset):
             if self._transforms is None:
                 self._transforms = Compose(
                     [ToTensor(),
-                     Normalize(.5, 0.5)]
+                     Normalize(0.5, 0.5)]
                 )
 
         return self._transforms
