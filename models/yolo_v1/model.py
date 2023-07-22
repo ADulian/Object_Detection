@@ -6,6 +6,7 @@ from torch import nn
 
 from models.common.tools import get_layer, get_cfg
 from models.base_classes.model_base import ModelBase
+from models.yolo_v1.criterion import YoloV1Criterion
 
 # --------------------------------------------------------------------------------
 class YoloV1(ModelBase):
@@ -42,6 +43,9 @@ class YoloV1(ModelBase):
                                 nn.LeakyReLU(negative_slope=0.1),
                                 nn.Linear(in_features=4096,
                                           out_features=(self.num_cells * self.num_cells * self.num_cell_features)))
+
+        # Initialize Criterion
+        self.criterion = YoloV1Criterion()
 
     # --------------------------------------------------------------------------------
     def _parse_model(self) -> nn.Sequential:
@@ -115,8 +119,9 @@ class YoloV1(ModelBase):
         y_hat = self(x=x)
 
         # Compute loss
+        loss = self.criterion(y=y, y_hat=y_hat)
 
-        return 0
+        return loss
 
     # --------------------------------------------------------------------------------
     def training_step(self,
