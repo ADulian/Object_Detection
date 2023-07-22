@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Type
 
 import lightning as L
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader
 
 from datasets.coco_dataset import CocoDataset
 from datasets.base_classes import DatasetSplit

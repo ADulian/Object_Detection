@@ -1,26 +1,29 @@
 import os
-import torch
-import lightning as L
+from typing import Any
 
+import torch
 from torch import nn
 
 from models.common.tools import get_layer, get_cfg
+from models.base_classes.model_base import ModelBase
 
 # --------------------------------------------------------------------------------
-class YoloV1(L.LightningModule):
+class YoloV1(ModelBase):
     """Yolo V1
     Ref: https://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Redmon_You_Only_Look_CVPR_2016_paper.pdf
     """
 
     # --------------------------------------------------------------------------------
     def __init__(self,
-                 num_classes: int = 20):
+                 num_classes: int = 20,
+                 lr: float = 1e-3):
         """Initialize Yolo
 
         Args:
             num_classes: (int): Number of classes
+            lr: (float): Learning rate
         """
-        super().__init__()
+        super().__init__(lr=lr)
 
         # Cfg
         self._cfg = get_cfg(root_path=os.path.dirname(os.path.abspath(__file__)))
@@ -97,20 +100,54 @@ class YoloV1(L.LightningModule):
         return out
 
     # --------------------------------------------------------------------------------
-    def training_step(self, batch, batch_idx):
-        ...
+    def training_step(self,
+                      batch: torch.Tensor,
+                      batch_idx: int):
+        """Training Step
+
+        Args:
+            batch: (torch.Tensor): batch of data
+            batch_idx: (int): Batch index
+        """
+        raise NotImplementedError("Training step not implemented")
 
     # --------------------------------------------------------------------------------
-    def validation_step(self, batch, batch_idx):
-        ...
+    def validation_step(self,
+                        batch: torch.Tensor,
+                        batch_idx: int):
+        """Validation Step
+
+        Args:
+            batch: (torch.Tensor): batch of data
+            batch_idx: (int): Batch index
+        """
+        raise NotImplementedError("Validation step not implemented")
 
     # --------------------------------------------------------------------------------
-    def test_step(self):
-        ...
+    def test_step(self,
+                  batch: torch.Tensor,
+                  batch_idx: int):
+        """Test Step
+
+        Args:
+            batch: (torch.Tensor): batch of data
+            batch_idx: (int): Batch index
+        """
+        raise NotImplementedError("Test step not implemented")
 
     # --------------------------------------------------------------------------------
-    def prediction_step(self):
-        ...
+    def predict_step(self,
+                     batch: Any,
+                     batch_idx: int,
+                     dataloader_idx: int = 0):
+        """Prediction Step
+
+        Args:
+            batch: (Any): batch of data
+            batch_idx: (int): Batch index
+            dataloader_idx: (int): Index of the current data loader
+        """
+        raise NotImplementedError("Prediction step not implemented")
 
     # --------------------------------------------------------------------------------
     def __str__(self):

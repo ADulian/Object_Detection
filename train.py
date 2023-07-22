@@ -27,7 +27,8 @@ def main():
                      num_workers=args.num_workers)
 
     # Init Model Manager
-    mm = ModelManager(num_classes=dm.num_classes)
+    mm = ModelManager(num_classes=dm.num_classes,
+                      lr=args.lr)
 
     # Init Trainer Manager
     tm = TrainManager(data_manager=dm,

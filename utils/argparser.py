@@ -25,5 +25,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--epochs", type=int, default=1, help="Number of training epochs")
     parser.add_argument("--accelerator", type=str, default="auto", help="Trainer aceelerator type, e.g. gpu, cpu")
     parser.add_argument("--devices", type=int, default=1, help="Number of accelerator device, e.g. number of gpus")
+    parser.add_argument("--lr", type=float, default=1e-3, help="Learning Rate")
 
     return parser.parse_args()

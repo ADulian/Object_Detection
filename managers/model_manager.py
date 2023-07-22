@@ -13,27 +13,31 @@ class ModelManager:
 
     # --------------------------------------------------------------------------------
     def __init__(self,
-                 num_classes: int):
+                 num_classes: int,
+                 lr: float=1e-3):
         """Initialise Model Manager
 
         Args:
             num_classes: (int): Number of classes for Yolo prediction
+            lr: (float): Learning rate
         """
 
-        self.model, self.gt_generator = self._init_model(num_classes=num_classes)
+        self.model, self.gt_generator = self._init_model(num_classes=num_classes, lr=lr)
 
         log.info("Model Manager Initialised")
 
     # --------------------------------------------------------------------------------
     def _init_model(self,
-                    num_classes: int) -> tuple[YoloV1, Type[YoloV1GTGenerator]]:
+                    num_classes: int,
+                    lr: float=1e-3) -> tuple[YoloV1, Type[YoloV1GTGenerator]]:
         """Initialize model and get reference to ground truth generator
         Args:
             num_classes: (int): Number of classes for Yolo prediction
+            lr: (float): Learning rate
         """
 
 
-        model = YoloV1(num_classes=num_classes)
+        model = YoloV1(num_classes=num_classes, lr=lr)
 
         log.info(f"{model} Initialised")
 
