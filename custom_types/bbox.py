@@ -56,14 +56,6 @@ class BBox:
         """
 
         self.bbox = bbox
-        self.width = 0.0
-        self.height = 0.0
-        self.top_x = 0.0
-        self.top_y = 0.0
-        self.bottom_x = 0.0
-        self.bottom_y = 0.0
-        self.mid_x = 0.0
-        self.mid_y = 0.0
         self.bbox_format = bbox_format
         self.bbox_parts = self._set_bbox_parts()
 
