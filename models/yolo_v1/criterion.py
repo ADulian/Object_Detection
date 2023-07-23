@@ -53,7 +53,9 @@ class YoloV1Criterion:
 
         import numpy as np
         bbox_1 = np.array([150., 250., 100., 50])
+        bbox_1 = np.repeat(bbox_1[np.newaxis, :], 2, axis=0)
         bbox_2 = np.array([200., 270., 100., 50])
+        bbox_2 = np.repeat(bbox_2[np.newaxis, :], 2, axis=0)
 
         iou(bbox_1=bbox_1, bbox_2=bbox_2, bbox_format=BBoxFormat.MID_X_MID_Y_WH)
 

@@ -14,20 +14,22 @@ def to_xyxy(bbox: torch.Tensor,
         return bbox
 
     elif bbox_format == BBoxFormat.XYWH:
-        bottom_right_x, bottom_right_y = bbox[0] + bbox[2], bbox[1] + bbox[2]
-        bbox[2] = bottom_right_x
-        bbox[3] = bottom_right_y
+        bottom_right_x, bottom_right_y = bbox[..., 0] + bbox[..., 2], bbox[..., 1] + bbox[...,3]
+        bbox[..., 2] = bottom_right_x
+        bbox[..., 3] = bottom_right_y
 
         return bbox
 
     elif bbox_format == BBoxFormat.MID_X_MID_Y_WH:
-        half_width, half_height = bbox[2:] / 2
-        mid_x, mid_y = bbox[:2]
+        mid_x = bbox[..., 0]
+        mid_y = bbox[..., 1]
+        half_width = bbox[..., 2] / 2
+        half_height = bbox[..., 3] / 2
 
         top_left_x, top_left_y = mid_x - half_width, mid_y - half_height
         bottom_right_x, bottom_right_y = mid_x + half_width, mid_y + half_height
 
-        return torch.tensor([top_left_x, top_left_y, bottom_right_x, bottom_right_y], device=bbox.device)
+        return torch.stack([top_left_x, top_left_y, bottom_right_x, bottom_right_y], dim=1)
 
 # --------------------------------------------------------------------------------
 def to_torch(bbox: (torch.Tensor | np.ndarray)) -> torch.Tensor:
@@ -63,7 +65,13 @@ def to_batch(bbox: torch.Tensor) -> torch.Tensor:
 def iou(bbox_1: (torch.Tensor | np.ndarray),
         bbox_2: (torch.Tensor | np.ndarray),
         bbox_format: BBoxFormat.XYXY = BBoxFormat.XYXY):
-    """Computer IoU between two bounding boxes
+    """Computer IoU between two bounding boxes or a batch of bboxes
+
+    Args:
+        bbox_1: (torch.Tensor | np.ndarray): First bounding box or a batch of bboxes
+        bbox_2: (torch.Tensor | np.ndarray): Second bounding box or a batch of bboxes
+        bbox_format: (BBoxFormat.XYXY): Format of bounding boxes
+
     """
 
     # To Torch Tensor
@@ -71,8 +79,8 @@ def iou(bbox_1: (torch.Tensor | np.ndarray),
     bbox_2 = to_torch(bbox=bbox_2)
 
     # To Batch
-    # bbox_1 = to_batch(bbox=bbox_1)
-    # bbox_2 = to_batch(bbox=bbox_2)
+    bbox_1 = to_batch(bbox=bbox_1)
+    bbox_2 = to_batch(bbox=bbox_2)
 
     # To XY_Top_Left, XY_Bottom_Right
     bbox_1 = to_xyxy(bbox=bbox_1, bbox_format=bbox_format)
