@@ -51,13 +51,12 @@ class YoloV1Criterion:
         y_hat_bboxs_1 = y_hat[:, :4]
         y_hat_bboxs_2 = y_hat[:, 5:9]
 
-        import numpy as np
-        bbox_1 = np.array([150., 250., 100., 50])
-        bbox_1 = np.repeat(bbox_1[np.newaxis, :], 2, axis=0)
-        bbox_2 = np.array([200., 270., 100., 50])
-        bbox_2 = np.repeat(bbox_2[np.newaxis, :], 2, axis=0)
+        # Compute IoU between both target boxes and gt box form each cell
+        ious_hat_1 = iou(bbox_1=y_bboxs, bbox_2=y_hat_bboxs_1, bbox_format=BBoxFormat.MID_X_MID_Y_WH)
+        ious_hat_2 = iou(bbox_1=y_bboxs, bbox_2=y_hat_bboxs_2, bbox_format=BBoxFormat.MID_X_MID_Y_WH)
 
-        iou(bbox_1=bbox_1, bbox_2=bbox_2, bbox_format=BBoxFormat.MID_X_MID_Y_WH)
+        # Compute top predicted box based on IoU
+
 
 
         return torch.Tensor([0.0])

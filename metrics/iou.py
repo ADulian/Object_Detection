@@ -7,7 +7,7 @@ from utils.math import torch_epsilon
 # --------------------------------------------------------------------------------
 def to_xyxy(bbox: torch.Tensor,
             bbox_format: BBoxFormat.XYXY = BBoxFormat.XYXY) -> torch.Tensor:
-    """Transform bounding box with current format to xyxy
+    """Transform a batch of bounding box with current format to xyxy
     """
 
     if bbox_format == BBoxFormat.XYXY:
@@ -87,11 +87,11 @@ def iou(bbox_1: (torch.Tensor | np.ndarray),
     bbox_2 = to_xyxy(bbox=bbox_2, bbox_format=bbox_format)
 
     # Intersection
-    top_left_x = torch.max(bbox_1[0], bbox_2[0])
-    top_left_y = torch.max(bbox_1[1], bbox_2[1])
+    top_left_x = torch.max(bbox_1[..., 0], bbox_2[..., 0])
+    top_left_y = torch.max(bbox_1[..., 1], bbox_2[..., 1])
 
-    bottom_right_x = torch.min(bbox_1[2], bbox_2[2])
-    bottom_right_y = torch.min(bbox_1[3], bbox_2[3])
+    bottom_right_x = torch.min(bbox_1[..., 2], bbox_2[..., 2])
+    bottom_right_y = torch.min(bbox_1[..., 3], bbox_2[..., 3])
 
     width = bottom_right_x - top_left_x
     height = bottom_right_y - top_left_y
@@ -99,7 +99,7 @@ def iou(bbox_1: (torch.Tensor | np.ndarray),
     intersection = width * height
 
     # Union
-    area = lambda bbox: (bbox[2] - bbox[0]) * (bbox[3] - bbox[1])
+    area = lambda bbox: (bbox[..., 2] - bbox[..., 0]) * (bbox[..., 3] - bbox[..., 1])
 
     bbox_1_area = area(bbox_1)
     bbox_2_area = area(bbox_2)
