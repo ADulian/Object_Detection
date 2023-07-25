@@ -46,17 +46,21 @@ class YoloV1Criterion:
         mask_obj = (y[:, -2] == 1.0).unsqueeze(-1)
         mask_no_obj = torch.logical_not(mask_obj)
 
-        # Computer Responsible BBoxes
-        y_bboxs = y[:, :4]
-        y_hat_bboxs_1 = y_hat[:, :4]
-        y_hat_bboxs_2 = y_hat[:, 5:9]
-
         # Compute IoU between both target boxes and gt box form each cell
-        ious_hat_1 = iou(bbox_1=y_bboxs, bbox_2=y_hat_bboxs_1, bbox_format=BBoxFormat.MID_X_MID_Y_WH)
-        ious_hat_2 = iou(bbox_1=y_bboxs, bbox_2=y_hat_bboxs_2, bbox_format=BBoxFormat.MID_X_MID_Y_WH)
+        ious_hat_1 = iou(bbox_1=y[:, :4], bbox_2=y_hat[:, :4], bbox_format=BBoxFormat.MID_X_MID_Y_WH)
+        ious_hat_2 = iou(bbox_1=y[:, :4], bbox_2=y_hat[:, 5:9], bbox_format=BBoxFormat.MID_X_MID_Y_WH)
 
-        # Compute top predicted box based on IoU
+        # Compute top predicted box in each cell based on IoU
+        ious_hat = torch.tensor((ious_hat_2 > ious_hat_1)) # 1 if 2nd box is True box 0 if 1st
 
+        # BBox + P(Object) (mid_x, mid_y, w, h, p)
+        y_hat_bboxs = torch.zeros(*y[:, :5].shape, device=y.device)
+
+        y_hat_bboxs_1_indices = torch.nonzero(ious_hat).squeeze()
+        y_hat_bboxs_2_indices = torch.nonzero(torch.logical_not(ious_hat)).squeeze()
+
+        y_hat_bboxs[y_hat_bboxs_1_indices] = y_hat[:, :5][y_hat_bboxs_1_indices]
+        y_hat_bboxs[y_hat_bboxs_2_indices] = y_hat[:, 5:10][y_hat_bboxs_2_indices]
 
 
         return torch.Tensor([0.0])
