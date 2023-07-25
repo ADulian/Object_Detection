@@ -53,7 +53,7 @@ class YoloV1Criterion:
         # Compute top predicted box in each cell based on IoU
         ious_hat = torch.tensor((ious_hat_2 > ious_hat_1)) # 1 if 2nd box is True box 0 if 1st
 
-        # BBox + P(Object) (mid_x, mid_y, w, h, p)
+        # BBox + Confidence(Object) (mid_x, mid_y, w, h, p)
         y_hat_bboxs = torch.zeros(*y[:, :5].shape, device=y.device)
 
         y_hat_bboxs_1_indices = torch.nonzero(ious_hat).squeeze()
@@ -61,6 +61,21 @@ class YoloV1Criterion:
 
         y_hat_bboxs[y_hat_bboxs_1_indices] = y_hat[:, :5][y_hat_bboxs_1_indices]
         y_hat_bboxs[y_hat_bboxs_2_indices] = y_hat[:, 5:10][y_hat_bboxs_2_indices]
+
+        # Classes
+        y_hat_classes = y_hat[:, 10:]
+
+        # --- BBox X, Y
+        x_y_loss = ((y_hat[:, :2] - y_hat_bboxs[:, :2]) ** 2)
+        x_y_loss = (x_y_loss * mask_obj).sum() * self.w_coords
+
+        # --- BBox W, H
+
+        # --- BBox Confidence Obj
+
+        # --- BBox Confidence No Obj
+
+        # --- Classes
 
 
         return torch.Tensor([0.0])

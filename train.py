@@ -20,7 +20,7 @@ def main():
     import torch
     y = torch.randn(10,7,7,6)
     y_hat = torch.randn(10,7,7,90)
-    # l(y=y, y_hat=y_hat)
+    l(y=y, y_hat=y_hat)
 
     # Parse arguments
     args = parse_args()
