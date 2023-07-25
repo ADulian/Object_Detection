@@ -40,6 +40,8 @@ class YoloV1Criterion:
         # Reshape
         y = y.view(batch_size * s * s, n)
         y[:10, 4] = 1.0 # Temp
+
+        # ToDo :: Values can be negative, does this need to be pushed through sigmoid to be 0-1?
         y_hat = y_hat.view(batch_size * s * s, n_hat)
 
         # Mask Obj/NoObj
@@ -66,10 +68,12 @@ class YoloV1Criterion:
         y_hat_classes = y_hat[:, 10:]
 
         # --- BBox X, Y
-        x_y_loss = ((y_hat[:, :2] - y_hat_bboxs[:, :2]) ** 2)
+        x_y_loss = ((y[:, :2] - y_hat_bboxs[:, :2]) ** 2)
         x_y_loss = (x_y_loss * mask_obj).sum() * self.w_coords
 
         # --- BBox W, H
+        w_h_loss = (((y[:, 2:4] ** 0.5) - (y_hat_bboxs[:, 2:4] ** 0.5)) ** 2)
+        w_h_loss = (w_h_loss * mask_obj).sum() * self.w_coords
 
         # --- BBox Confidence Obj
 
