@@ -13,8 +13,8 @@ class YoloV1Criterion:
         """Initialize Criterion for YoloV1
         """
 
-        self.w_coords = 5.
-        self.w_noobj = 5.
+        self.w_coords = 5.0
+        self.w_noobj = 0.5
 
     # --------------------------------------------------------------------------------
     def __call__(self,
@@ -39,10 +39,12 @@ class YoloV1Criterion:
 
         # Reshape
         y = y.view(batch_size * s * s, n)
+        y = torch.sigmoid(y)
         y[:10, 4] = 1.0 # Temp
 
         # ToDo :: Values can be negative, does this need to be pushed through sigmoid to be 0-1?
         y_hat = y_hat.view(batch_size * s * s, n_hat)
+        y_hat = torch.sigmoid(y_hat)
 
         # Mask Obj/NoObj
         mask_obj = (y[:, -2] == 1.0).unsqueeze(-1)
@@ -75,9 +77,15 @@ class YoloV1Criterion:
         w_h_loss = ((torch.sqrt(y[:, 2:4]) - torch.square(y_hat_bboxs[:, 2:4])) ** 2)
         w_h_loss = (w_h_loss * mask_obj).sum() * self.w_coords
 
-        # --- BBox Confidence Obj
+        # --- BBox Confidence
+        c_loss = ((y[:, 4:5] - y_hat_bboxs[:, 4:5]) ** 2)
 
-        # --- BBox Confidence No Obj
+        # Obj
+        iou_truth_pred = iou(bbox_1=y[:, :4], bbox_2=y_hat_bboxs[:, :4], bbox_format=BBoxFormat.MID_X_MID_Y_WH)
+        c_obj_loss = (c_loss * iou_truth_pred.unsqueeze(-1) * mask_obj).sum()
+
+        # No Obj
+        c_no_obj_loss = (c_loss * mask_no_obj).sum() * self.w_noobj
 
         # --- Classes
 
