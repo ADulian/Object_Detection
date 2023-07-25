@@ -72,7 +72,7 @@ class YoloV1Criterion:
         x_y_loss = (x_y_loss * mask_obj).sum() * self.w_coords
 
         # --- BBox W, H
-        w_h_loss = (((y[:, 2:4] ** 0.5) - (y_hat_bboxs[:, 2:4] ** 0.5)) ** 2)
+        w_h_loss = ((torch.sqrt(y[:, 2:4]) - torch.square(y_hat_bboxs[:, 2:4])) ** 2)
         w_h_loss = (w_h_loss * mask_obj).sum() * self.w_coords
 
         # --- BBox Confidence Obj
