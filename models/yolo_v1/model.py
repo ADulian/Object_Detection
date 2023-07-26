@@ -121,7 +121,7 @@ class YoloV1(ModelBase):
         # Compute loss
         loss = self.criterion(y=y, y_hat=y_hat)
 
-        return loss
+        return {"loss": loss}
 
     # --------------------------------------------------------------------------------
     def training_step(self,

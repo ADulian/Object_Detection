@@ -33,14 +33,16 @@ class CocoDataset(Dataset):
 
         self._dataset_split = dataset_split
         self._imgs_path = imgs_path
-        self._data_samples, self.classes = self._load_data(annotations_file=annotations_file)
+        self._data_samples, self.idx_to_class, self.class_to_idx = self._load_data(annotations_file=annotations_file)
 
         split = dataset_split.name[0] + dataset_split.name[1:].lower()
         log.info(f"{split} Coco Dataset Initialised")
 
     # --------------------------------------------------------------------------------
     @staticmethod
-    def _load_data(annotations_file: (Path | None) = None) -> tuple[list[CocoDataSample], dict[int, str]]:
+    def _load_data(annotations_file: (Path | None) = None) -> tuple[list[CocoDataSample],
+                                                                    dict[int, str],
+                                                                    dict[str, int]]:
 
         """Load img and annotation data for coco
 
@@ -56,8 +58,10 @@ class CocoDataset(Dataset):
         with open(annotations_file, "rb") as f:
             data_json = json.load(f)
 
-        # Class mapping
-        classes = { cat["id"] : cat["name"] for cat in data_json["categories"]}
+        # Mappings
+        idx_to_class = {idx : cat["name"] for idx, cat in enumerate(data_json["categories"])}
+        class_to_idx = {v : k for k, v in idx_to_class.items()}
+        cat_to_class_idx = {cat["id"] : [idx, cat["name"]] for idx, cat in enumerate(data_json["categories"])}
 
         imgs_data_json, annotations_data_json = data_json["images"], data_json["annotations"]
 
@@ -75,10 +79,11 @@ class CocoDataset(Dataset):
 
         # Initialize data samples
         data_samples = [CocoDataSample(img_data=img_data,
-                                       annotation_data=annotations_data[img_key])
+                                       annotation_data=annotations_data[img_key],
+                                       cat_to_class_idx=cat_to_class_idx)
                         for img_key, img_data in imgs_data.items()]
 
-        return data_samples, classes
+        return data_samples, idx_to_class, class_to_idx
 
     # --------------------------------------------------------------------------------
     def __len__(self) -> int:

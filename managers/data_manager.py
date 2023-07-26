@@ -95,7 +95,7 @@ class DataManager(L.LightningDataModule):
         self._train_set = self._val_set
 
         # Set number of classes
-        self.num_classes = len(self._val_set.classes)
+        self.num_classes = len(self._val_set.idx_to_class)
 
     # --------------------------------------------------------------------------------
     def update(self,

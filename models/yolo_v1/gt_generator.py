@@ -82,10 +82,10 @@ class YoloV1GTGenerator(Dataset):
         img, data_sample = self._dataset[idx]
 
         # Get relevant data
-        class_ids = []
+        class_idx = []
         bboxs = []
         for ann in data_sample.annotations:
-            class_ids.append(ann.class_id)
+            class_idx.append(ann.class_idx)
             bboxs.append(ann.bbox)
 
         # Preprocess image
@@ -99,7 +99,7 @@ class YoloV1GTGenerator(Dataset):
         num_features = 6 # BBox (4), Confidence (1),  Class (1)
         grid = np.zeros((self._num_cells, self._num_cells, num_features), dtype=float)
 
-        for class_id, bbox in zip(class_ids, bboxs):
+        for class_idx, bbox in zip(class_idx, bboxs):
             if bbox is not None:
                 # Get bbox
                 x, y, w, h = bbox.get_bbox(bbox_format=BBoxFormat.MID_X_MID_Y_WH)
@@ -117,6 +117,6 @@ class YoloV1GTGenerator(Dataset):
                 w, h = w / self._in_size, h / self._in_size
 
                 # Place information in a grid
-                grid[x_cell, y_cell] = np.array([x, y, w ,h , 1, class_id], dtype=float)
+                grid[x_cell, y_cell] = np.array([x, y, w ,h , 1, class_idx], dtype=float)
 
         return img, grid
