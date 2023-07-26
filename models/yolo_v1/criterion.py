@@ -39,11 +39,9 @@ class YoloV1Criterion:
 
         # Reshape
         y = y.view(batch_size * s * s, n)
-        y = torch.sigmoid(y)
-        y[:10, 4] = 1.0 # Temp
-
-        # ToDo :: Values can be negative, does this need to be pushed through sigmoid to be 0-1?
         y_hat = y_hat.view(batch_size * s * s, n_hat)
+
+        # Sigmoid Y_Hat
         y_hat = torch.sigmoid(y_hat)
 
         # Mask Obj/NoObj
@@ -66,9 +64,6 @@ class YoloV1Criterion:
         y_hat_bboxs[y_hat_bboxs_1_indices] = y_hat[:, :5][y_hat_bboxs_1_indices]
         y_hat_bboxs[y_hat_bboxs_2_indices] = y_hat[:, 5:10][y_hat_bboxs_2_indices]
 
-        # Classes
-        y_hat_classes = y_hat[:, 10:]
-
         # --- BBox X, Y
         x_y_loss = ((y[:, :2] - y_hat_bboxs[:, :2]) ** 2)
         x_y_loss = (x_y_loss * mask_obj).sum() * self.w_coords
@@ -88,8 +83,20 @@ class YoloV1Criterion:
         c_no_obj_loss = (c_loss * mask_no_obj).sum() * self.w_noobj
 
         # --- Classes
+        y_hat_classes = y_hat[:, 10:]   # Predictions [-1, num_classes]
 
+        true_classes = y[:, -1].unsqueeze(-1).to(torch.int64) # Indices of true classes [-1, 1]
+        src_values = torch.ones([y_hat.shape[0], 1], dtype=torch.float, device=y.device) # Ones [-1, 1]
+        y_classes = torch.zeros_like(y_hat_classes, device=y.device) # Target Y Tensor [-1, num_classes]
 
-        return torch.Tensor([0.0])
+        # Fill Y Tensor with ones. (src_values) at index dictated by true_classes Tensor
+        y_classes.scatter_(dim=-1, index=true_classes, src=src_values)
 
-    # --------------------------------------------------------------------------------
+        # Compute Loss
+        cl_loss = ((y_classes - y_hat_classes) ** 2)
+        cl_loss = (cl_loss * mask_obj).sum()
+
+        # Combine
+        loss = x_y_loss + w_h_loss + c_obj_loss + c_no_obj_loss + cl_loss
+
+        return loss
