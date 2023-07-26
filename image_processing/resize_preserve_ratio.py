@@ -81,7 +81,9 @@ class PILResizePreserveRatio:
 
             # Turn back into BBox
             bboxs = np.concatenate([x1y1, x2y2]).T
-            bboxs = [BBox(bbox=bbox, bbox_format=BBoxFormat.XYXY).clamp_bbox(max_width=new_width, max_height=new_height)
-                     for bbox in bboxs]
+            bboxs = [BBox(bbox=bbox, bbox_format=BBoxFormat.XYXY) for bbox in bboxs]
+
+            for bbox in bboxs:
+                bbox.clamp_bbox(max_width=new_width, max_height=new_height)
 
         return img, bboxs

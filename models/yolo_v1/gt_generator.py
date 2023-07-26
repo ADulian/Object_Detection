@@ -100,22 +100,23 @@ class YoloV1GTGenerator(Dataset):
         grid = np.zeros((self._num_cells, self._num_cells, num_features), dtype=float)
 
         for class_id, bbox in zip(class_ids, bboxs):
-            # Get bbox
-            x, y, w, h = bbox.get_bbox(bbox_format=BBoxFormat.MID_X_MID_Y_WH)
+            if bbox is not None:
+                # Get bbox
+                x, y, w, h = bbox.get_bbox(bbox_format=BBoxFormat.MID_X_MID_Y_WH)
 
-            # Skip if mid falls outside of image boundries
-            if x > self._in_size or y > self._in_size:
-                continue
+                # Skip if mid falls outside of image boundries
+                if x > self._in_size or y > self._in_size:
+                    continue
 
-            # Compute cell position
-            x_cell, y_cell = x // self._cell_size, y // self._cell_size
-            x_cell, y_cell = int(min(x_cell, self._num_cells)), int(min(y_cell, self._num_cells))
+                # Compute cell position
+                x_cell, y_cell = x // self._cell_size, y // self._cell_size
+                x_cell, y_cell = int(min(x_cell, self._num_cells)), int(min(y_cell, self._num_cells))
 
-            # Normalize bbox
-            x, y = (x / self._cell_size) - x_cell, (y / self._cell_size) - y_cell
-            w, h = w / self._in_size, h / self._in_size
+                # Normalize bbox
+                x, y = (x / self._cell_size) - x_cell, (y / self._cell_size) - y_cell
+                w, h = w / self._in_size, h / self._in_size
 
-            # Place information in a grid
-            grid[x_cell, y_cell] = np.array([x, y, w ,h , 1, class_id], dtype=float)
+                # Place information in a grid
+                grid[x_cell, y_cell] = np.array([x, y, w ,h , 1, class_id], dtype=float)
 
         return img, grid
