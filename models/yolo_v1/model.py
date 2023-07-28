@@ -105,11 +105,13 @@ class YoloV1(ModelBase):
 
     # --------------------------------------------------------------------------------
     def common_step(self,
-                    batch: list[torch.Tensor]):
+                    batch: list[torch.Tensor],
+                    mode: str):
         """Common Step used by training and validation
 
         Args:
             batch: (list[torch.Tensor]): A list with batch of data
+            mode: (str): Running mode for logging
         """
 
         # Split the batch
@@ -121,7 +123,10 @@ class YoloV1(ModelBase):
         # Compute loss
         loss = self.criterion(y=y, y_hat=y_hat)
 
-        return {"loss": loss}
+        # L String
+        self.log(f"{mode} loss", loss, on_step=True, prog_bar=True)
+
+        return loss
 
     # --------------------------------------------------------------------------------
     def training_step(self,
@@ -132,7 +137,7 @@ class YoloV1(ModelBase):
         Args:
             batch: (list[torch.Tensor]): A list with batch of data
         """
-        return self.common_step(batch=batch)
+        return self.common_step(batch=batch, mode="Train")
 
     # --------------------------------------------------------------------------------
     def validation_step(self,
@@ -143,7 +148,7 @@ class YoloV1(ModelBase):
         Args:
             batch: (list[torch.Tensor]): A list with batch of data
         """
-        return self.common_step(batch=batch)
+        return self.common_step(batch=batch, mode="Val")
 
     # --------------------------------------------------------------------------------
     def test_step(self,
