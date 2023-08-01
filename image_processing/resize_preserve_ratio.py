@@ -63,7 +63,7 @@ class PILResizePreserveRatio:
             img = padded_img # Consistency
 
         # Transform Bounding Box
-        if bboxs is not None:
+        if bboxs is not None and bboxs:
             # Transforms the Bbox object to np bounding boxes and split into two sets of vectors
             np_bboxs = np.stack([bbox.get_bbox(bbox_format=BBoxFormat.XYXY) for bbox in bboxs]).T
 
