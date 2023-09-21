@@ -71,13 +71,13 @@ class BBox:
             self.top_x, self.top_y = self.bbox[0], self.bbox[1]
             self.bottom_x, self.bottom_y = self.bbox[2], self.bbox[3]
             self.width, self.height = self.bottom_x - self.top_x, self.bottom_y - self.top_y
-            self.mid_x, self.mid_y = self.bottom_x - (self.width / 2), self.bottom_x - (self.height / 2)
+            self.mid_x, self.mid_y = self.bottom_x - (self.width / 2), self.bottom_y - (self.height / 2)
 
         elif self.bbox_format == BBoxFormat.XYWH:
             self.top_x, self.top_y = self.bbox[0], self.bbox[1]
             self.width, self.height = self.bbox[2], self.bbox[3]
             self.bottom_x, self.bottom_y = self.top_x + self.width, self.top_y + self.height
-            self.mid_x, self.mid_y = self.bottom_x - (self.width / 2), self.bottom_x - (self.height / 2)
+            self.mid_x, self.mid_y = self.bottom_x - (self.width / 2), self.bottom_y - (self.height / 2)
 
         elif self.bbox_format == BBoxFormat.MID_X_MID_Y_WH:
             self.mid_x, self.mid_y = self.bbox[0], self.bbox[1]
