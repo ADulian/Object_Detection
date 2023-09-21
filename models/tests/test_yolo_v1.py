@@ -49,35 +49,6 @@ def get_y_hat_test(flatten: bool = True):
 
     return y_hat
 
-
-# --------------------------------------------------------------------------------
-class TestYoloV1Metrics:
-    """Test Yolo V1 Metrics
-    """
-
-    def test_iou(self):
-        """Tets Intersection over Union
-        """
-
-        # Get test data
-        y_bbox = get_y_test()[:, :4]
-        y_hat_bbox = get_y_hat_test()[:, :4]
-
-        # Compute IoU between true and predicted boxes
-        computed_iou = iou(bbox_1=y_bbox, bbox_2=y_hat_bbox, bbox_format=BBoxFormat.MID_X_MID_Y_WH)
-
-        #
-
-
-        y = y_bbox.numpy()
-        y_hat = y_hat_bbox.numpy()
-        computed_iou = computed_iou.numpy()
-
-
-
-        ...
-
-
 # --------------------------------------------------------------------------------
 class TestYoloV1Criterion:
     """Test Yolo V1 Criterion
