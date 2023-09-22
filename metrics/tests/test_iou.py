@@ -5,7 +5,7 @@ from custom_types.bbox import BBoxFormat, BBox
 
 # --------------------------------------------------------------------------------
 class Test_IoU:
-    """Test Intersection over Union on unnormalized and normalized data as well as various box format
+    """Test Intersection over Union on various box's format
     """
 
     # BBoxs
@@ -22,7 +22,7 @@ class Test_IoU:
     def get_iou(self,
                 bbox_format: BBoxFormat):
 
-        """Compute IoU between unnormalized bboxes
+        """Compute IoU bboxes
         """
         bbox_1 = self.BBOX_1.get_bbox(bbox_format=bbox_format)
         bbox_2 = self.BBOX_2.get_bbox(bbox_format=bbox_format)
