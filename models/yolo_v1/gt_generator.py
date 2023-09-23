@@ -57,6 +57,28 @@ class YoloV1GTGenerator(Dataset):
         return self._transforms
 
     # --------------------------------------------------------------------------------
+    def normalize_bbox(self, mid_x: float, mid_y: float, width: float, height: float,
+                       x_cell: int, y_cell: int):
+        """Normalize bbox as defined in YoloV1 paper
+        """
+
+        mid_x, mid_y = (mid_x / self._cell_size) - x_cell, (mid_y / self._cell_size) - y_cell
+        width, height = width / self._in_size, height / self._in_size
+
+        return mid_x, mid_y, width, height
+
+    # --------------------------------------------------------------------------------
+    def unnormalize_bbox(self, mid_x: float, mid_y: float, width: float, height: float,
+                       x_cell: int, y_cell: int):
+        """Unnormalize bboc (inverse of normalize function)
+        """
+
+        mid_x, mid_y = (mid_x + x_cell) * self._cell_size, (mid_y + y_cell) * self._cell_size
+        width, height = width * self._in_size, height * self._in_size
+
+        return mid_x, mid_y, width, height
+
+    # --------------------------------------------------------------------------------
     def __len__(self) -> int:
         """Get length of dataset
 
@@ -113,8 +135,7 @@ class YoloV1GTGenerator(Dataset):
                 x_cell, y_cell = int(min(x_cell, self._num_cells)), int(min(y_cell, self._num_cells))
 
                 # Normalize bbox
-                x, y = (x / self._cell_size) - x_cell, (y / self._cell_size) - y_cell
-                w, h = w / self._in_size, h / self._in_size
+                x, y, w, h = self.normalize_bbox(x, y, w, h, x_cell, y_cell)
 
                 # Place information in a grid
                 grid[x_cell, y_cell] = np.array([x, y, w ,h , 1, class_idx], dtype=float)
