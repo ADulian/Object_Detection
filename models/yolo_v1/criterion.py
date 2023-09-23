@@ -1,7 +1,9 @@
+import os
 import torch
 
 from metrics.iou import iou
 from custom_types.bbox import BBoxFormat
+from models.common.tools import get_cfg
 
 # --------------------------------------------------------------------------------
 class YoloV1Criterion:
@@ -13,8 +15,16 @@ class YoloV1Criterion:
         """Initialize Criterion for YoloV1
         """
 
-        self.w_coords = 5.0
-        self.w_noobj = 0.5
+        # Cfg
+        self._cfg = get_cfg(root_path=os.path.dirname(os.path.abspath(__file__)))
+
+        # Settings
+        self._in_size = self._cfg["in_size"]
+        self._num_cells = self._cfg["num_cells"]
+        self._cell_size = self._in_size // self._num_cells
+
+        self._w_coords = self._cfg["criterion"]["w_coords"]
+        self._w_noobj = self._cfg["criterion"]["w_noobj"]
 
     # --------------------------------------------------------------------------------
     def __call__(self,
@@ -66,11 +76,11 @@ class YoloV1Criterion:
 
         # --- BBox X, Y
         x_y_loss = ((y[:, :2] - y_hat_bboxs[:, :2]) ** 2)
-        x_y_loss = (x_y_loss * mask_obj).sum() * self.w_coords
+        x_y_loss = (x_y_loss * mask_obj).sum() * self._w_coords
 
         # --- BBox W, H
         w_h_loss = ((torch.sqrt(y[:, 2:4]) - torch.square(y_hat_bboxs[:, 2:4])) ** 2)
-        w_h_loss = (w_h_loss * mask_obj).sum() * self.w_coords
+        w_h_loss = (w_h_loss * mask_obj).sum() * self._w_coords
 
         # --- BBox Confidence
         c_loss = ((y[:, 4:5] - y_hat_bboxs[:, 4:5]) ** 2)
@@ -80,7 +90,7 @@ class YoloV1Criterion:
         c_obj_loss = (c_loss * iou_truth_pred.unsqueeze(-1) * mask_obj).sum()
 
         # No Obj
-        c_no_obj_loss = (c_loss * mask_no_obj).sum() * self.w_noobj
+        c_no_obj_loss = (c_loss * mask_no_obj).sum() * self._w_noobj
 
         # --- Classes
         y_hat_classes = y_hat[:, 10:]   # Predictions [-1, num_classes]

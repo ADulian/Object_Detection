@@ -2,6 +2,10 @@ in_size: 448
 num_cells: 7
 num_bboxes: 2
 
+criterion:
+  w_coords: 5.0
+  w_noobj: 0.5
+
 layers:
   Conv2dBasic_1: {"out_channels": 64, "kernel_size": 7, "stride": 2}
   MaxPool2d_1: { "kernel_size": 2, "stride": 2, }
