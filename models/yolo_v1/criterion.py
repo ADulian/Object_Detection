@@ -4,6 +4,7 @@ import torch
 from metrics.iou import iou
 from custom_types.bbox import BBoxFormat
 from models.common.tools import get_cfg
+from models.yolo_v1.utils import batch_unnormalize_bbox
 
 # --------------------------------------------------------------------------------
 class YoloV1Criterion:
@@ -27,6 +28,38 @@ class YoloV1Criterion:
         self._w_noobj = self._cfg["criterion"]["w_noobj"]
 
     # --------------------------------------------------------------------------------
+    def _compute_ious(self,
+                     y: torch.Tensor,
+                     y_hat: torch.Tensor):
+
+        """ Compute IoUs between ground truth and predictions 2 bboxs
+        Args:
+            y: (torch.Tensor): Ground truth data
+            y_hat: (torch.Tensor): Model's predictions
+        """
+
+        # Get bounding boxes
+        bboxs_y = y[..., :4].clone()
+        bboxs_y_hat_1 = y_hat[..., :4].clone()
+        bboxs_y_hat_2 = y_hat[..., 5:9].clone()
+
+        # Unnormalize
+        bboxs_y = batch_unnormalize_bbox(batch_bbox=bboxs_y,
+                                         cell_size=self._cell_size, in_size=self._in_size)
+
+        bboxs_y_hat_1 = batch_unnormalize_bbox(batch_bbox=bboxs_y_hat_1,
+                                               cell_size=self._cell_size, in_size=self._in_size)
+
+        bboxs_y_hat_2 = batch_unnormalize_bbox(batch_bbox=bboxs_y_hat_2,
+                                         cell_size=self._cell_size, in_size=self._in_size)
+
+        # Compute IoU
+        ious_1 = iou(bbox_1=bboxs_y, bbox_2=bboxs_y_hat_1, bbox_format=BBoxFormat.MID_X_MID_Y_WH)
+        ious_2 = iou(bbox_1=bboxs_y, bbox_2=bboxs_y_hat_2, bbox_format=BBoxFormat.MID_X_MID_Y_WH)
+
+        return ious_1, ious_2
+
+    # --------------------------------------------------------------------------------
     def __call__(self,
                  y: torch.Tensor,
                  y_hat: torch.Tensor) -> torch.Tensor:
@@ -41,11 +74,16 @@ class YoloV1Criterion:
         """
 
         # Sanity Check
+        # y = torch.randn(1, 7, 7, 6)
+        # y_hat = torch.randn(1, 7, 7, 90)
         assert y.shape[:-1] == y_hat.shape[:-1], f"Something went wrong, \nshape-> y: {y.shape}, y_hat: {y_hat.shape}"
 
         # Cache shape
         batch_size, s, s, n = y.shape
         n_hat = y_hat.shape[-1]
+
+        # Compute IoUs
+        ious_hat_1, ious_hat_2 = self._compute_ious(y, y_hat)
 
         # Reshape
         y = y.view(batch_size * s * s, n)
@@ -57,10 +95,6 @@ class YoloV1Criterion:
         # Mask Obj/NoObj
         mask_obj = (y[:, -2] == 1.0).unsqueeze(-1)
         mask_no_obj = torch.logical_not(mask_obj)
-
-        # Compute IoU between both target boxes and gt box form each cell
-        ious_hat_1 = iou(bbox_1=y[:, :4], bbox_2=y_hat[:, :4], bbox_format=BBoxFormat.MID_X_MID_Y_WH)
-        ious_hat_2 = iou(bbox_1=y[:, :4], bbox_2=y_hat[:, 5:9], bbox_format=BBoxFormat.MID_X_MID_Y_WH)
 
         # Compute top predicted box in each cell based on IoU
         ious_hat = torch.tensor((ious_hat_2 > ious_hat_1)) # 1 if 2nd box is True box 0 if 1st
