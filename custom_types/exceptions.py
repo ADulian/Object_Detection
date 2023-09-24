@@ -16,5 +16,5 @@ class DimensionLengthError(Exception):
             target_dim_length: (int): Expected length of dimensions
             add_msg: (str): Optional, additional message
         """
-        super().__init__(f"Incorrect length of dimensions! Expected: {target_dim_length}, Actual: {dim_length} "
+        super().__init__(f"Incorrect length of dimensions! Expected: {target_dim_length}, Actual: {dim_length}. "
                          + add_msg)
