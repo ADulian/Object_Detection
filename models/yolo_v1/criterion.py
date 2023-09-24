@@ -30,12 +30,16 @@ class YoloV1Criterion:
     # --------------------------------------------------------------------------------
     def _compute_ious(self,
                      y: torch.Tensor,
-                     y_hat: torch.Tensor):
+                     y_hat: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
 
         """ Compute IoUs between ground truth and predictions 2 bboxs
         Args:
             y: (torch.Tensor): Ground truth data
             y_hat: (torch.Tensor): Model's predictions
+
+        Returns:
+            tuple[torch.Tensor, torch.Tensor]: 2xTensors with IoUs
+
         """
 
         # Get bounding boxes
@@ -51,7 +55,12 @@ class YoloV1Criterion:
                                                cell_size=self._cell_size, in_size=self._in_size)
 
         bboxs_y_hat_2 = batch_unnormalize_bbox(batch_bbox=bboxs_y_hat_2,
-                                         cell_size=self._cell_size, in_size=self._in_size)
+                                               cell_size=self._cell_size, in_size=self._in_size)
+
+        # Rehspae bboxs
+        bboxs_y = bboxs_y.view(-1, bboxs_y.shape[-1])
+        bboxs_y_hat_1 = bboxs_y_hat_1.view(-1, bboxs_y_hat_1.shape[-1])
+        bboxs_y_hat_2 = bboxs_y_hat_2.view(-1, bboxs_y_hat_2.shape[-1])
 
         # Compute IoU
         ious_1 = iou(bbox_1=bboxs_y, bbox_2=bboxs_y_hat_1, bbox_format=BBoxFormat.MID_X_MID_Y_WH)
@@ -74,8 +83,8 @@ class YoloV1Criterion:
         """
 
         # Sanity Check
-        # y = torch.randn(1, 7, 7, 6)
-        # y_hat = torch.randn(1, 7, 7, 90)
+        # y = torch.ones(1, 7, 7, 6)
+        # y_hat = torch.ones(1, 7, 7, 90)
         assert y.shape[:-1] == y_hat.shape[:-1], f"Something went wrong, \nshape-> y: {y.shape}, y_hat: {y_hat.shape}"
 
         # Cache shape

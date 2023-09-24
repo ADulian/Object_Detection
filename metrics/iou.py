@@ -64,7 +64,7 @@ def to_batch(bbox: torch.Tensor) -> torch.Tensor:
 # --------------------------------------------------------------------------------
 def iou(bbox_1: (torch.Tensor | np.ndarray),
         bbox_2: (torch.Tensor | np.ndarray),
-        bbox_format: BBoxFormat.XYXY = BBoxFormat.XYXY):
+        bbox_format: BBoxFormat.XYXY = BBoxFormat.XYXY) -> torch.Tensor:
     """Computer IoU between two bounding boxes or a batch of bboxes
 
     Args:
@@ -72,6 +72,8 @@ def iou(bbox_1: (torch.Tensor | np.ndarray),
         bbox_2: (torch.Tensor | np.ndarray): Second bounding box or a batch of bboxes
         bbox_format: (BBoxFormat.XYXY): Format of bounding boxes
 
+    Returns:
+        torch.Tensor: Torch tensor with IoU per bounding box
     """
 
     # To Torch Tensor
