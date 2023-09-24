@@ -87,6 +87,9 @@ class YoloV1Criterion:
         # y_hat = torch.ones(1, 7, 7, 90)
         assert y.shape[:-1] == y_hat.shape[:-1], f"Something went wrong, \nshape-> y: {y.shape}, y_hat: {y_hat.shape}"
 
+        # Sigmoid Y_Hat
+        y_hat = torch.sigmoid(y_hat)
+
         # Cache shape
         batch_size, s, s, n = y.shape
         n_hat = y_hat.shape[-1]
@@ -97,9 +100,6 @@ class YoloV1Criterion:
         # Reshape
         y = y.view(batch_size * s * s, n)
         y_hat = y_hat.view(batch_size * s * s, n_hat)
-
-        # Sigmoid Y_Hat
-        y_hat = torch.sigmoid(y_hat)
 
         # Mask Obj/NoObj
         mask_obj = (y[:, -2] == 1.0).unsqueeze(-1)
