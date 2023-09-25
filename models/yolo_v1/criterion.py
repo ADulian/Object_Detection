@@ -95,6 +95,127 @@ class YoloV1Criterion:
         return y_hat_bboxs_1_indices, y_hat_bboxs_2_indices
 
     # --------------------------------------------------------------------------------
+    def _compute_x_y_loss(self,
+                          y: torch.Tensor,
+                          y_hat_bboxs: torch.Tensor,
+                          mask_obj: torch.Tensor) -> torch.Tensor:
+        """Compute loss for x and y position
+
+        sum(mask_obj * [(x - x_hat)**2 + (y - y_hat)**2]) * w_coords
+
+        Args:
+            y: (torch.Tensor): Ground truth data
+            y_hat_bboxs: (torch.Tensor): Predicted boxes
+            mask_obj: (torch.Tensor): Mask tensor for in cell objects
+
+        Returns:
+            torch.Tensor: Loss tensor
+
+        """
+
+        x_y_loss = ((y[:, :2] - y_hat_bboxs[:, :2]) ** 2)
+        x_y_loss = (x_y_loss * mask_obj).sum() * self._w_coords
+
+        return x_y_loss
+
+    # --------------------------------------------------------------------------------
+    def _compute_w_h_loss(self,
+                          y: torch.Tensor,
+                          y_hat_bboxs: torch.Tensor,
+                          mask_obj: torch.Tensor) -> torch.Tensor:
+        """Compute loss for width and height
+
+        sum(mask_obj * [(w**1/2 - w_hat**1/2)^2 + (h**1/2 - h_hat**1/2)^2]) * w_coords
+
+        Args:
+            y: (torch.Tensor): Ground truth data
+            y_hat_bboxs: (torch.Tensor): Predicted boxes
+            mask_obj: (torch.Tensor): Mask tensor for in cell objects
+
+        Returns:
+            torch.Tensor: Loss tensor
+
+        """
+
+        w_h_loss = ((torch.sqrt(y[:, 2:4]) - torch.sqrt(y_hat_bboxs[:, 2:4])) ** 2)
+        w_h_loss = (w_h_loss * mask_obj).sum() * self._w_coords
+
+        return w_h_loss
+
+    # --------------------------------------------------------------------------------
+    def _compute_confidence_loss(self,
+                                 y: torch.Tensor,
+                                 y_hat_bboxs: torch.Tensor,
+                                 mask_obj: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        """Compute confidence loss
+
+        1. sum(mask_obj * [(c _ c_hat)**2])
+        2. sum(mask_no_obj * [(c _ c_hat)**2] * w_noobj
+        sum(mask_obj * [(w**1/2 - w_hat**1/2)^2 + (h**1/2 - h_hat**1/2)^2]) * w_coords
+
+        Args:
+            y: (torch.Tensor): Ground truth data
+            y_hat_bboxs: (torch.Tensor): Predicted boxes
+            mask_obj: (torch.Tensor): Mask tensor for in cell objects
+
+        Returns:
+            torch.Tensor: Loss tensors
+
+        """
+
+        # Get a No object mask
+        mask_no_obj = torch.logical_not(mask_obj)
+
+        # Compute loss
+        c_loss = ((y[:, 4:5] - y_hat_bboxs[:, 4:5]) ** 2)
+
+        # Obj
+        # ToDo:: 1. Get IoUs from previous step (already been computed)
+        iou_truth_pred = iou(bbox_1=y[:, :4], bbox_2=y_hat_bboxs[:, :4], bbox_format=BBoxFormat.MID_X_MID_Y_WH)
+
+        # ToDo:: 2. This seems wrong, it's not the loss that should be multiplied BUT the actual predicted confidence
+        c_obj_loss = (c_loss * iou_truth_pred.unsqueeze(-1) * mask_obj).sum()
+
+        # No Obj
+        # ToDo:: 3. Should this also be multiplied by IoU?
+        c_no_obj_loss = (c_loss * mask_no_obj).sum() * self._w_noobj
+
+        return c_obj_loss, c_no_obj_loss
+
+    # --------------------------------------------------------------------------------
+    def _compute_class_loss(self,
+                            y: torch.Tensor,
+                            y_hat: torch.Tensor,
+                            mask_obj: torch.Tensor) -> torch.Tensor:
+        """Compute class loss
+
+        sum(mask_obj * [(p(class) - p(class_hat))**2])
+
+        Args:
+            y: (torch.Tensor): Ground truth data
+            y_hat: (torch.Tensor): Predicted data
+            mask_obj: (torch.Tensor): Mask tensor for in cell objects
+
+        Returns:
+            torch.Tensor: Loss tensor
+        """
+
+        y_hat_classes = y_hat[:, 10:]  # Predictions [-1, num_classes]
+
+        true_classes = y[:, -1].unsqueeze(-1).to(torch.int64)  # Indices of true classes [-1, 1]
+        src_values = torch.ones([y_hat.shape[0], 1], dtype=torch.float, device=y.device)  # Ones [-1, 1]
+        y_classes = torch.zeros_like(y_hat_classes, device=y.device)  # Target Y Tensor [-1, num_classes]
+
+        # Fill Y Tensor with ones. (src_values) at index dictated by true_classes Tensor
+        y_classes.scatter_(dim=-1, index=true_classes, src=src_values)
+
+        # Compute Loss
+        cl_loss = ((y_classes - y_hat_classes) ** 2)
+        cl_loss = (cl_loss * mask_obj).sum()
+
+        return cl_loss
+
+    # --------------------------------------------------------------------------------
     def __call__(self,
                  y: torch.Tensor,
                  y_hat: torch.Tensor) -> torch.Tensor:
@@ -109,8 +230,8 @@ class YoloV1Criterion:
         """
 
         # Sanity Check
-        y = torch.ones(1, 7, 7, 6)
-        y_hat = torch.ones(1, 7, 7, 90)
+        # y = torch.ones(1, 7, 7, 6)
+        # y_hat = torch.ones(1, 7, 7, 90)
         assert y.shape[:-1] == y_hat.shape[:-1], f"Something went wrong, \nshape-> y: {y.shape}, y_hat: {y_hat.shape}"
 
         # Sigmoid Y_Hat
@@ -133,43 +254,16 @@ class YoloV1Criterion:
         y_hat_bboxs[y_hat_bboxs_1_indices] = y_hat[:, :5][y_hat_bboxs_1_indices]
         y_hat_bboxs[y_hat_bboxs_2_indices] = y_hat[:, 5:10][y_hat_bboxs_2_indices]
 
-        # Mask Obj/NoObj
+        # Mask Obj
         mask_obj = (y[:, -2] == 1.0).unsqueeze(-1)
-        mask_no_obj = torch.logical_not(mask_obj)
 
-        # --- BBox X, Y
-        x_y_loss = ((y[:, :2] - y_hat_bboxs[:, :2]) ** 2)
-        x_y_loss = (x_y_loss * mask_obj).sum() * self._w_coords
+        # --- Compute Loss terms
+        x_y_loss = self._compute_x_y_loss(y=y, y_hat_bboxs=y_hat_bboxs, mask_obj=mask_obj)
+        w_h_loss = self._compute_w_h_loss(y=y, y_hat_bboxs=y_hat_bboxs, mask_obj=mask_obj)
+        c_obj_loss, c_no_obj_loss = self._compute_confidence_loss(y=y, y_hat_bboxs=y_hat_bboxs, mask_obj=mask_obj)
+        cl_loss = self._compute_class_loss(y=y, y_hat=y_hat, mask_obj=mask_obj)
 
-        # --- BBox W, H
-        w_h_loss = ((torch.sqrt(y[:, 2:4]) - torch.square(y_hat_bboxs[:, 2:4])) ** 2)
-        w_h_loss = (w_h_loss * mask_obj).sum() * self._w_coords
-
-        # --- BBox Confidence
-        c_loss = ((y[:, 4:5] - y_hat_bboxs[:, 4:5]) ** 2)
-
-        # Obj
-        iou_truth_pred = iou(bbox_1=y[:, :4], bbox_2=y_hat_bboxs[:, :4], bbox_format=BBoxFormat.MID_X_MID_Y_WH)
-        c_obj_loss = (c_loss * iou_truth_pred.unsqueeze(-1) * mask_obj).sum()
-
-        # No Obj
-        c_no_obj_loss = (c_loss * mask_no_obj).sum() * self._w_noobj
-
-        # --- Classes
-        y_hat_classes = y_hat[:, 10:]   # Predictions [-1, num_classes]
-
-        true_classes = y[:, -1].unsqueeze(-1).to(torch.int64) # Indices of true classes [-1, 1]
-        src_values = torch.ones([y_hat.shape[0], 1], dtype=torch.float, device=y.device) # Ones [-1, 1]
-        y_classes = torch.zeros_like(y_hat_classes, device=y.device) # Target Y Tensor [-1, num_classes]
-
-        # Fill Y Tensor with ones. (src_values) at index dictated by true_classes Tensor
-        y_classes.scatter_(dim=-1, index=true_classes, src=src_values)
-
-        # Compute Loss
-        cl_loss = ((y_classes - y_hat_classes) ** 2)
-        cl_loss = (cl_loss * mask_obj).sum()
-
-        # Combine
+        # Combine terms to get final loss
         loss = x_y_loss + w_h_loss + c_obj_loss + c_no_obj_loss + cl_loss
 
         return loss
