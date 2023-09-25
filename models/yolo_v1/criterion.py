@@ -29,8 +29,8 @@ class YoloV1Criterion:
 
     # --------------------------------------------------------------------------------
     def _compute_ious(self,
-                     y: torch.Tensor,
-                     y_hat: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+                      y: torch.Tensor,
+                      y_hat: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
 
         """ Compute IoUs between ground truth and predictions 2 bboxs
         Args:
@@ -69,6 +69,32 @@ class YoloV1Criterion:
         return ious_1, ious_2
 
     # --------------------------------------------------------------------------------
+    def _compare_ious(self,
+                      y: torch.Tensor,
+                      y_hat: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        """Compare IoUs for 2 proposal boxes per prediction
+
+        Args:
+            y: (torch.Tensor): Ground truth data
+            y_hat: (torch.Tensor): Model's predictions
+
+        Returns:
+            tuple[torch.Tensor, torch.Tensor]: 2xTensors with indices of Top Boxes
+        """
+
+        # Compute IoUs
+        ious_1, ious_2 = self._compute_ious(y=y, y_hat=y_hat)
+
+        # Compute top predicted box in each cell based on IoU
+        ious_hat = torch.tensor((ious_1 > ious_2))  # 1 if 2nd box is True box 0 if 1st
+
+        # Get indices of top boxes
+        y_hat_bboxs_1_indices = torch.nonzero(ious_hat).squeeze()
+        y_hat_bboxs_2_indices = torch.nonzero(torch.logical_not(ious_hat)).squeeze()
+
+        return y_hat_bboxs_1_indices, y_hat_bboxs_2_indices
+
+    # --------------------------------------------------------------------------------
     def __call__(self,
                  y: torch.Tensor,
                  y_hat: torch.Tensor) -> torch.Tensor:
@@ -83,8 +109,8 @@ class YoloV1Criterion:
         """
 
         # Sanity Check
-        # y = torch.ones(1, 7, 7, 6)
-        # y_hat = torch.ones(1, 7, 7, 90)
+        y = torch.ones(1, 7, 7, 6)
+        y_hat = torch.ones(1, 7, 7, 90)
         assert y.shape[:-1] == y_hat.shape[:-1], f"Something went wrong, \nshape-> y: {y.shape}, y_hat: {y_hat.shape}"
 
         # Sigmoid Y_Hat
@@ -94,28 +120,22 @@ class YoloV1Criterion:
         batch_size, s, s, n = y.shape
         n_hat = y_hat.shape[-1]
 
-        # Compute IoUs
-        ious_hat_1, ious_hat_2 = self._compute_ious(y, y_hat)
+        # Compute and Compare IoUs of predicted boxes
+        y_hat_bboxs_1_indices, y_hat_bboxs_2_indices = self._compare_ious(y, y_hat)
 
         # Reshape
         y = y.view(batch_size * s * s, n)
         y_hat = y_hat.view(batch_size * s * s, n_hat)
 
-        # Mask Obj/NoObj
-        mask_obj = (y[:, -2] == 1.0).unsqueeze(-1)
-        mask_no_obj = torch.logical_not(mask_obj)
-
-        # Compute top predicted box in each cell based on IoU
-        ious_hat = torch.tensor((ious_hat_2 > ious_hat_1)) # 1 if 2nd box is True box 0 if 1st
-
         # BBox + Confidence(Object) (mid_x, mid_y, w, h, p)
         y_hat_bboxs = torch.zeros(*y[:, :5].shape, device=y.device)
 
-        y_hat_bboxs_1_indices = torch.nonzero(ious_hat).squeeze()
-        y_hat_bboxs_2_indices = torch.nonzero(torch.logical_not(ious_hat)).squeeze()
-
         y_hat_bboxs[y_hat_bboxs_1_indices] = y_hat[:, :5][y_hat_bboxs_1_indices]
         y_hat_bboxs[y_hat_bboxs_2_indices] = y_hat[:, 5:10][y_hat_bboxs_2_indices]
+
+        # Mask Obj/NoObj
+        mask_obj = (y[:, -2] == 1.0).unsqueeze(-1)
+        mask_no_obj = torch.logical_not(mask_obj)
 
         # --- BBox X, Y
         x_y_loss = ((y[:, :2] - y_hat_bboxs[:, :2]) ** 2)
