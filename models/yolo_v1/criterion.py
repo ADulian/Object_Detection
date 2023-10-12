@@ -113,7 +113,7 @@ class YoloV1Criterion:
 
         """
 
-        x_y_loss = ((y[:, :2] - y_hat_bboxs[:, :2]) ** 2)
+        x_y_loss = ((y[:, :2] - y_hat_bboxs[:, :2]) ** 2).sum(axis=-1, keepdims=True)
         x_y_loss = (x_y_loss * mask_obj).sum() * self._w_coords
 
         return x_y_loss
@@ -136,8 +136,7 @@ class YoloV1Criterion:
             torch.Tensor: Loss tensor
 
         """
-
-        w_h_loss = ((torch.sqrt(y[:, 2:4]) - torch.sqrt(y_hat_bboxs[:, 2:4])) ** 2)
+        w_h_loss = ((torch.sqrt(y[:, 2:4]) - torch.sqrt(y_hat_bboxs[:, 2:4])) ** 2).sum(axis=-1, keepdims=True)
         w_h_loss = (w_h_loss * mask_obj).sum() * self._w_coords
 
         return w_h_loss
@@ -230,40 +229,42 @@ class YoloV1Criterion:
         """
 
         # Sanity Check
-        # y = torch.ones(1, 7, 7, 6)
-        # y_hat = torch.ones(1, 7, 7, 90)
+        y = torch.ones(1, 7, 7, 6) * 2
+        y_hat = torch.ones(1, 7, 7, 90) * 4
+        # y_hat[..., :5]
         assert y.shape[:-1] == y_hat.shape[:-1], f"Something went wrong, \nshape-> y: {y.shape}, y_hat: {y_hat.shape}"
 
         # Sigmoid Y_Hat
-        y_hat = torch.sigmoid(y_hat)
+        # y_hat = torch.sigmoid(y_hat)
 
         # Cache shape
         batch_size, s, s, n = y.shape
         n_hat = y_hat.shape[-1]
 
         # Compute and Compare IoUs of predicted boxes
-        y_hat_bboxs_1_indices, y_hat_bboxs_2_indices = self._compare_ious(y, y_hat)
+        # y_hat_bboxs_1_indices, y_hat_bboxs_2_indices = self._compare_ious(y, y_hat)
 
         # Reshape
         y = y.view(batch_size * s * s, n)
         y_hat = y_hat.view(batch_size * s * s, n_hat)
 
         # BBox + Confidence(Object) (mid_x, mid_y, w, h, p)
-        y_hat_bboxs = torch.zeros(*y[:, :5].shape, device=y.device)
+        # y_hat_bboxs = torch.zeros(*y[:, :5].shape, device=y.device)
 
-        y_hat_bboxs[y_hat_bboxs_1_indices] = y_hat[:, :5][y_hat_bboxs_1_indices]
-        y_hat_bboxs[y_hat_bboxs_2_indices] = y_hat[:, 5:10][y_hat_bboxs_2_indices]
+        # y_hat_bboxs[y_hat_bboxs_1_indices] = y_hat[:, :5][y_hat_bboxs_1_indices]
+        # y_hat_bboxs[y_hat_bboxs_2_indices] = y_hat[:, 5:10][y_hat_bboxs_2_indices]
 
         # Mask Obj
         mask_obj = (y[:, -2] == 1.0).unsqueeze(-1)
 
         # --- Compute Loss terms
+        y_hat_bboxs = y_hat[..., :5]
         x_y_loss = self._compute_x_y_loss(y=y, y_hat_bboxs=y_hat_bboxs, mask_obj=mask_obj)
         w_h_loss = self._compute_w_h_loss(y=y, y_hat_bboxs=y_hat_bboxs, mask_obj=mask_obj)
-        c_obj_loss, c_no_obj_loss = self._compute_confidence_loss(y=y, y_hat_bboxs=y_hat_bboxs, mask_obj=mask_obj)
-        cl_loss = self._compute_class_loss(y=y, y_hat=y_hat, mask_obj=mask_obj)
+        # c_obj_loss, c_no_obj_loss = self._compute_confidence_loss(y=y, y_hat_bboxs=y_hat_bboxs, mask_obj=mask_obj)
+        # cl_loss = self._compute_class_loss(y=y, y_hat=y_hat, mask_obj=mask_obj)
 
         # Combine terms to get final loss
-        loss = x_y_loss + w_h_loss + c_obj_loss + c_no_obj_loss + cl_loss
+        loss = x_y_loss + w_h_loss# + c_obj_loss + c_no_obj_loss + cl_loss
 
         return loss
