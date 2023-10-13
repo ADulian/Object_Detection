@@ -162,21 +162,18 @@ class YoloV1Criterion:
 
         """
 
-        # Get a No object mask
-        mask_no_obj = torch.logical_not(mask_obj)
+        # Compute c_hat
+        iou_truth_pred = iou(bbox_1=y[:, :4], bbox_2=y_hat_bboxs[:, :4], bbox_format=BBoxFormat.MID_X_MID_Y_WH) * 0.3
+        c_hat = y_hat_bboxs[:, 4:5] * iou_truth_pred.unsqueeze(-1)
 
         # Compute loss
-        c_loss = ((y[:, 4:5] - y_hat_bboxs[:, 4:5]) ** 2)
+        c_loss = ((y[:, 4:5] - c_hat) ** 2)
 
         # Obj
-        # ToDo:: 1. Get IoUs from previous step (already been computed)
-        iou_truth_pred = iou(bbox_1=y[:, :4], bbox_2=y_hat_bboxs[:, :4], bbox_format=BBoxFormat.MID_X_MID_Y_WH)
-
-        # ToDo:: 2. This seems wrong, it's not the loss that should be multiplied BUT the actual predicted confidence
-        c_obj_loss = (c_loss * iou_truth_pred.unsqueeze(-1) * mask_obj).sum()
+        c_obj_loss = (c_loss * mask_obj).sum()
 
         # No Obj
-        # ToDo:: 3. Should this also be multiplied by IoU?
+        mask_no_obj = torch.logical_not(mask_obj)
         c_no_obj_loss = (c_loss * mask_no_obj).sum() * self._w_noobj
 
         return c_obj_loss, c_no_obj_loss
@@ -229,10 +226,10 @@ class YoloV1Criterion:
         """
 
         # Sanity Check
-        y = torch.ones(1, 7, 7, 6) * 4
+        y = torch.ones(1, 7, 7, 6) * 0
         y_hat = torch.ones(1, 7, 7, 90)
-        y_hat[..., :5] *= 2 # True boxes
-        y_hat[..., 5:10] *= 4
+        # y_hat[..., :5] *= 2 # True boxes
+        # y_hat[..., 5:10] *= 4
         assert y.shape[:-1] == y_hat.shape[:-1], f"Something went wrong, \nshape-> y: {y.shape}, y_hat: {y_hat.shape}"
 
         # Sigmoid Y_Hat
@@ -262,7 +259,7 @@ class YoloV1Criterion:
         # y_hat_bboxs = y_hat[..., :5]
         x_y_loss = self._compute_x_y_loss(y=y, y_hat_bboxs=y_hat_bboxs, mask_obj=mask_obj)
         w_h_loss = self._compute_w_h_loss(y=y, y_hat_bboxs=y_hat_bboxs, mask_obj=mask_obj)
-        # c_obj_loss, c_no_obj_loss = self._compute_confidence_loss(y=y, y_hat_bboxs=y_hat_bboxs, mask_obj=mask_obj)
+        c_obj_loss, c_no_obj_loss = self._compute_confidence_loss(y=y, y_hat_bboxs=y_hat_bboxs, mask_obj=mask_obj)
         # cl_loss = self._compute_class_loss(y=y, y_hat=y_hat, mask_obj=mask_obj)
 
         # Combine terms to get final loss
