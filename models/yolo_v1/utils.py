@@ -87,10 +87,13 @@ def batch_unnormalize_bbox(batch_bbox: (np.ndarray | torch.Tensor),
     if isinstance(batch_bbox, np.ndarray): # To Torch
         batch_bbox = torch.from_numpy(batch_bbox)
 
+    # Device
+    device = batch_bbox.device
+
     # X, Y
     num_x_cells, num_y_cells = batch_bbox.shape[1], batch_bbox.shape[2]
-    x_pos = torch.arange(num_x_cells).reshape(1, num_x_cells, 1, 1)
-    y_pos = torch.arange(num_y_cells).reshape(1, 1, num_y_cells, 1)
+    x_pos = torch.arange(num_x_cells, device=device).reshape(1, num_x_cells, 1, 1)
+    y_pos = torch.arange(num_y_cells, device=device).reshape(1, 1, num_y_cells, 1)
 
     batch_bbox[..., :1] = (batch_bbox[..., :1] + x_pos) * cell_size
     batch_bbox[..., 1:2] = (batch_bbox[..., 1:2] + y_pos) * cell_size

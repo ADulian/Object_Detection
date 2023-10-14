@@ -123,8 +123,8 @@ class YoloV1(ModelBase):
         # Compute loss
         loss = self.criterion(y=y, y_hat=y_hat)
 
-        # L String
-        self.log(f"{mode} loss", loss, on_step=True, prog_bar=True)
+        # Log
+        self.log(f"{mode}/loss", loss, on_step=True, prog_bar=True)
 
         return loss
 
