@@ -4,6 +4,7 @@ import lightning as L
 
 from managers.data_manager import DataManager
 from managers.model_manager import ModelManager
+from lightning.pytorch.loggers import WandbLogger
 
 log = logging.getLogger("lightning")
 
@@ -32,6 +33,7 @@ class TrainManager:
         self._data_manager = data_manager
         self._model_manager = model_manager
         self._trainer = L.Trainer(max_epochs=epochs,
+                                  logger=WandbLogger(project="Dummy"),
                                   accelerator=accelerator,
                                   devices=devices)
 
