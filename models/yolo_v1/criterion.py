@@ -226,14 +226,10 @@ class YoloV1Criterion:
         """
 
         # Sanity Check
-        y = torch.ones(1, 7, 7, 6) * 0
-        y_hat = torch.ones(1, 7, 7, 90)
-        # y_hat[..., :5] *= 2 # True boxes
-        # y_hat[..., 5:10] *= 4
         assert y.shape[:-1] == y_hat.shape[:-1], f"Something went wrong, \nshape-> y: {y.shape}, y_hat: {y_hat.shape}"
 
         # Sigmoid Y_Hat
-        # y_hat = torch.sigmoid(y_hat)
+        y_hat = torch.sigmoid(y_hat)
 
         # Cache shape
         batch_size, s, s, n = y.shape
@@ -260,9 +256,10 @@ class YoloV1Criterion:
         x_y_loss = self._compute_x_y_loss(y=y, y_hat_bboxs=y_hat_bboxs, mask_obj=mask_obj)
         w_h_loss = self._compute_w_h_loss(y=y, y_hat_bboxs=y_hat_bboxs, mask_obj=mask_obj)
         c_obj_loss, c_no_obj_loss = self._compute_confidence_loss(y=y, y_hat_bboxs=y_hat_bboxs, mask_obj=mask_obj)
-        # cl_loss = self._compute_class_loss(y=y, y_hat=y_hat, mask_obj=mask_obj)
+        cl_loss = self._compute_class_loss(y=y, y_hat=y_hat, mask_obj=mask_obj)
 
         # Combine terms to get final loss
-        loss = x_y_loss + w_h_loss# + c_obj_loss + c_no_obj_loss + cl_loss
+        loss = x_y_loss + w_h_loss + c_obj_loss + c_no_obj_loss + cl_loss
+        loss = loss / batch_size
 
         return loss
