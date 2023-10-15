@@ -24,7 +24,8 @@ def main():
                      test_batch_size=args.test_bs,
                      shuffle=args.shuffle,
                      pin_memory=args.pin_memory,
-                     num_workers=args.num_workers)
+                     num_workers=args.num_workers,
+                     use_dev_set=args.use_dev_set)
 
     # Init Model Manager
     mm = ModelManager(num_classes=dm.num_classes,

@@ -1,3 +1,4 @@
+import os
 import logging
 from pathlib import Path
 from typing import Type
@@ -26,7 +27,8 @@ class DataManager(L.LightningDataModule):
                  test_batch_size: int = 1,
                  shuffle: bool = False,
                  pin_memory: bool = False,
-                 num_workers: int = 0) -> None:
+                 num_workers: int = 0,
+                 use_dev_set: bool = False) -> None:
         """Initialize Data Manager
 
         Args:
@@ -52,6 +54,7 @@ class DataManager(L.LightningDataModule):
 
         self.num_classes = None
         self._gt_generator = None
+        self._use_dev_set = use_dev_set
 
         # Datasets specific
         self._train_set = None
@@ -74,25 +77,32 @@ class DataManager(L.LightningDataModule):
         """
         log.info(f"Loading dataset from {self._coco_root_path}")
 
-        # Paths
-        train_imgs_path = self._coco_root_path / "images/train2017"
-        val_imgs_path = self._coco_root_path / "images/val2017"
-        # test_imgs_path = coco_root / "images/test2017"
-
-        train_annotations_file = self._coco_root_path / "annotations/instances_train2017.json"
-        val_annotations_file = self._coco_root_path / "annotations/instances_val2017.json"
-
         # Datasets
-        # self._train_set = CocoDataset(dataset_split=DatasetSplit.TRAIN,
-        #                               imgs_path=train_imgs_path,
-        #                               annotations_file=train_annotations_file)
+        if self._use_dev_set:
+            dev_imgs_path = Path(os.getcwd()) / "dev_dataset/images"
+            dev_annotations_file = Path(os.getcwd()) / "dev_dataset/instances_dev2017.json"
 
-        self._val_set = CocoDataset(dataset_split=DatasetSplit.VALIDATION,
-                                    imgs_path=val_imgs_path,
-                                    annotations_file=val_annotations_file)
+            dev_set = CocoDataset(dataset_split=DatasetSplit.TRAIN,
+                                  imgs_path=dev_imgs_path,
+                                  annotations_file=dev_annotations_file)
 
-        # Temp for debugging
-        self._train_set = self._val_set
+            self._train_set = dev_set
+            self._val_set = dev_set
+            self._val_set._dataset_split = DatasetSplit.VALIDATION
+        else:
+            train_imgs_path = self._coco_root_path / "images/train2017"
+            val_imgs_path = self._coco_root_path / "images/val2017"
+
+            train_annotations_file = self._coco_root_path / "annotations/instances_train2017.json"
+            val_annotations_file = self._coco_root_path / "annotations/instances_val2017.json"
+
+            self._train_set = CocoDataset(dataset_split=DatasetSplit.TRAIN,
+                                          imgs_path=train_imgs_path,
+                                          annotations_file=train_annotations_file)
+
+            self._val_set = CocoDataset(dataset_split=DatasetSplit.VALIDATION,
+                                        imgs_path=val_imgs_path,
+                                        annotations_file=val_annotations_file)
 
         # Set number of classes
         self.num_classes = len(self._val_set.idx_to_class)
