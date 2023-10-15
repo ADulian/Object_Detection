@@ -19,7 +19,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--test_bs", type=int, default=1, help="Test batch size")
     parser.add_argument("--shuffle", type=bool, default=False, help="Shuffle train dataset")
     parser.add_argument("--pin_memory", type=bool, default=False, help="Pin memory")
-    parser.add_argument("--num_workers", type=int, default=1, help="Number of workers")
+    parser.add_argument("--num_workers", type=int, default=0, help="Number of workers")
     parser.add_argument("--use_dev_set", type=bool, default=True, help="Whether to use dev set (few images)")
 
     # Training
