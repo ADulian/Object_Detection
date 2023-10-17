@@ -29,8 +29,9 @@ class CocoDataSample:
         self.img_width = img_data["width"]
 
         # Annotations Data
-        self.annotations = [CocoAnnotation(annotation=annotation, cat_to_class_idx=cat_to_class_idx)
-                            for annotation in annotation_data]
+        self.annotations = self._get_annotations(annotation_data=annotation_data,
+                                                 cat_to_class_idx=cat_to_class_idx)
+
 
     # --------------------------------------------------------------------------------
     def get_bboxes(self) -> np.ndarray:
@@ -41,6 +42,34 @@ class CocoDataSample:
         """
 
         return np.stack([annotation.bbox for annotation in self.annotations])
+
+    # --------------------------------------------------------------------------------
+    def _get_annotations(self,
+                         annotation_data: list[dict],
+                         cat_to_class_idx: dict[str, list[int, str]]) -> list:
+        """Get annotations if its valid
+
+        if in limited categories then class_idx is not None
+
+        Args:
+            annotation_data: (list[dict]): a list of annotation data
+            cat_to_class_idx: (dict[str, list[int, str]]): mapping from category id to class idx/name
+
+        Returns:
+            list: list of Coco annotations
+        """
+
+        annotations = []
+
+        for annotation in annotation_data:
+            coco_annotation = CocoAnnotation(annotation=annotation,
+                                             cat_to_class_idx=cat_to_class_idx)
+
+            if coco_annotation.class_idx is not None:
+                annotations.append(coco_annotation)
+
+
+        return annotations
 
 # --------------------------------------------------------------------------------
 class CocoAnnotation:
@@ -64,6 +93,12 @@ class CocoAnnotation:
         self.is_crowd = annotation["iscrowd"]
         self.area = annotation["area"]
         self.cat_id = annotation["category_id"]
-        self.class_idx, self.cat_name = cat_to_class_idx[self.cat_id]
+
+        self.class_idx = None
+        self.cat_name = None
+        class_idx_cat_name = cat_to_class_idx.get(self.cat_id)
+        if class_idx_cat_name:
+            self.class_idx, self.cat_name = class_idx_cat_name
+
         self.bbox = BBox(bbox=np.array(annotation["bbox"], dtype=float),
                          bbox_format=BBoxFormat.XYWH)

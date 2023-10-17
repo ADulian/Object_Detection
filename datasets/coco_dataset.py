@@ -58,10 +58,14 @@ class CocoDataset(Dataset):
         with open(annotations_file, "rb") as f:
             data_json = json.load(f)
 
+        # Limit to only subset of categories (Person, Car)
+        limit_cat = [1, 3]
+        categories = [d for d in data_json["categories"] if d["id"] in limit_cat]
+
         # Mappings
-        idx_to_class = {idx : cat["name"] for idx, cat in enumerate(data_json["categories"])}
+        idx_to_class = {idx : cat["name"] for idx, cat in enumerate(categories)}
         class_to_idx = {v : k for k, v in idx_to_class.items()}
-        cat_to_class_idx = {cat["id"] : [idx, cat["name"]] for idx, cat in enumerate(data_json["categories"])}
+        cat_to_class_idx = {cat["id"] : [idx, cat["name"]] for idx, cat in enumerate(categories)}
 
         imgs_data_json, annotations_data_json = data_json["images"], data_json["annotations"]
 
