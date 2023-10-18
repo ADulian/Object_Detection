@@ -2,6 +2,7 @@ import os
 import numpy as np
 from typing import Callable
 
+import torch
 from torchvision.transforms.transforms import Compose, ToTensor, Normalize
 from torch.utils.data import Dataset
 
@@ -120,5 +121,13 @@ class YoloV1GTGenerator(Dataset):
 
                 # Place information in a grid
                 grid[x_cell, y_cell] = np.array([x, y, w ,h , 1, class_idx], dtype=float)
+
+        grid = torch.from_numpy(grid)
+
+        if torch.isnan(grid).any():
+            raise ValueError("Grid has NaN values")
+
+        if torch.isnan(img).any():
+            raise ValueError("Img is NaN")
 
         return img, grid

@@ -28,6 +28,7 @@ class YoloV1Criterion:
         self._w_noobj = self._cfg["criterion"]["w_noobj"]
 
     # --------------------------------------------------------------------------------
+    @torch.no_grad()
     def _compute_ious(self,
                       y: torch.Tensor,
                       y_hat: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:

@@ -32,10 +32,12 @@ class TrainManager:
 
         self._data_manager = data_manager
         self._model_manager = model_manager
+        self._logger = WandbLogger(project="Dummy")
         self._trainer = L.Trainer(max_epochs=epochs,
-                                  logger=WandbLogger(project="Dummy"),
+                                  logger=self._logger,
                                   accelerator=accelerator,
-                                  devices=devices)
+                                  devices=devices,
+                                  log_every_n_steps=1)
 
     # --------------------------------------------------------------------------------
     def __call__(self):
@@ -46,6 +48,10 @@ class TrainManager:
 
         # Update data manager
         self._data_manager.update(gt_generator=self._model_manager.gt_generator)
+
+        # Watch Model
+        self._logger.watch(self._model_manager.model,
+                           log_freq=1)
 
         # Fit the model
         self._trainer.fit(model=self._model_manager.model,

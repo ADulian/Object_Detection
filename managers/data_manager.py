@@ -86,9 +86,13 @@ class DataManager(L.LightningDataModule):
                                   imgs_path=dev_imgs_path,
                                   annotations_file=dev_annotations_file)
 
-            self._train_set = dev_set
-            self._val_set = dev_set
-            self._val_set._dataset_split = DatasetSplit.VALIDATION
+            self._train_set = CocoDataset(dataset_split=DatasetSplit.TRAIN,
+                                          imgs_path=dev_imgs_path,
+                                          annotations_file=dev_annotations_file)
+
+            self._val_set = CocoDataset(dataset_split=DatasetSplit.VALIDATION,
+                                        imgs_path=dev_imgs_path,
+                                        annotations_file=dev_annotations_file)
         else:
             train_imgs_path = self._coco_root_path / "images/train2017"
             val_imgs_path = self._coco_root_path / "images/val2017"

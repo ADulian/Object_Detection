@@ -101,6 +101,9 @@ class YoloV1(ModelBase):
         # Reshape so that the output = (cells * cells * num_features)
         out = out.view(out.shape[0], self.num_cells, self.num_cells, self.num_cell_features)
 
+        if torch.isnan(out).any():
+            raise ValueError("Model out is NaN")
+
         return out
 
     # --------------------------------------------------------------------------------
@@ -117,11 +120,25 @@ class YoloV1(ModelBase):
         # Split the batch
         x, y = batch
 
+        # self.log("X Mean", x.mean(), on_step=True)
+        # self.log("X STD", x.std(), on_step=True)
+        # self.log("X Max", x.max(), on_step=True)
+        # self.log("X Min", x.min(), on_step=True)
+        #
+        # self.log("Y Mean", y.mean(), on_step=True)
+        # self.log("Y STD", y.std(), on_step=True)
+        # self.log("Y Max", y.max(), on_step=True)
+        # self.log("Y Min", y.min(), on_step=True)
+
+
         # Forward Pass
         y_hat = self(x=x)
 
         # Compute loss
         loss = self.criterion(y=y, y_hat=y_hat)
+
+        if torch.isnan(loss).any():
+            raise ValueError("Loss is NaN")
 
         # Log
         self.log(f"{mode}/loss", loss, on_step=True, prog_bar=True)
