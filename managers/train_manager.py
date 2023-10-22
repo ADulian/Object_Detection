@@ -1,10 +1,12 @@
 import logging
 
 import lightning as L
+from lightning.pytorch.loggers import WandbLogger
+from lightning.pytorch.callbacks import ModelCheckpoint
 
 from managers.data_manager import DataManager
 from managers.model_manager import ModelManager
-from lightning.pytorch.loggers import WandbLogger
+from utils.dir import get_output_dir
 
 log = logging.getLogger("lightning")
 
@@ -33,8 +35,11 @@ class TrainManager:
         self._data_manager = data_manager
         self._model_manager = model_manager
         self._logger = WandbLogger(project="Dummy")
+        self._output_dir = get_output_dir()
+
         self._trainer = L.Trainer(max_epochs=epochs,
                                   logger=self._logger,
+                                  callbacks=self._get_callbacks(),
                                   accelerator=accelerator,
                                   devices=devices,
                                   log_every_n_steps=1)
@@ -56,3 +61,36 @@ class TrainManager:
         # Fit the model
         self._trainer.fit(model=self._model_manager.model,
                           datamodule=self._data_manager)
+
+    # ---------------------------------------------------0-----------------------------
+    def _get_callbacks(self) -> list:
+        """ Initialize Trainer Callbacks
+
+        """
+        callbacks = [
+            self._set_checkpoint_callback(),
+        ]
+
+        return callbacks
+
+
+    # --------------------------------------------------------------------------------
+    def _set_checkpoint_callback(self) -> ModelCheckpoint:
+        """Create Model Checkpoint callback
+
+
+        Returns:
+            ModelCheckpoint: Checkpoint callback
+        """
+
+        # Define Checkpoint Callback
+        checkpoint_callback = ModelCheckpoint(
+            dirpath=self._output_dir / "checkpoints",
+            filename="{epoch}",
+            monitor="val_loss",
+            save_top_k=1,
+            verbose=False,
+            save_last=True,
+        )
+
+        return checkpoint_callback

@@ -120,28 +120,14 @@ class YoloV1(ModelBase):
         # Split the batch
         x, y = batch
 
-        # self.log("X Mean", x.mean(), on_step=True)
-        # self.log("X STD", x.std(), on_step=True)
-        # self.log("X Max", x.max(), on_step=True)
-        # self.log("X Min", x.min(), on_step=True)
-        #
-        # self.log("Y Mean", y.mean(), on_step=True)
-        # self.log("Y STD", y.std(), on_step=True)
-        # self.log("Y Max", y.max(), on_step=True)
-        # self.log("Y Min", y.min(), on_step=True)
-
-
         # Forward Pass
         y_hat = self(x=x)
 
         # Compute loss
         loss = self.criterion(y=y, y_hat=y_hat)
 
-        if torch.isnan(loss).any():
-            raise ValueError("Loss is NaN")
-
         # Log
-        self.log(f"{mode}/loss", loss, on_step=True, prog_bar=True)
+        self.log(f"{mode}_loss", loss, on_step=True, prog_bar=True, on_epoch=True)
 
         return loss
 
@@ -154,7 +140,7 @@ class YoloV1(ModelBase):
         Args:
             batch: (list[torch.Tensor]): A list with batch of data
         """
-        return self.common_step(batch=batch, mode="Train")
+        return self.common_step(batch=batch, mode="train")
 
     # --------------------------------------------------------------------------------
     def validation_step(self,
@@ -165,7 +151,7 @@ class YoloV1(ModelBase):
         Args:
             batch: (list[torch.Tensor]): A list with batch of data
         """
-        return self.common_step(batch=batch, mode="Val")
+        return self.common_step(batch=batch, mode="val")
 
     # --------------------------------------------------------------------------------
     def test_step(self,
