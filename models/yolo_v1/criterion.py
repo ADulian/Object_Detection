@@ -164,9 +164,9 @@ class YoloV1Criterion:
         """
 
         # Compute c_hat
-        with torch.no_grad():
-            iou_truth_pred = iou(bbox_1=y[:, :4], bbox_2=y_hat_bboxs[:, :4], bbox_format=BBoxFormat.MID_X_MID_Y_WH)
-            c_hat = y_hat_bboxs[:, 4:5] * iou_truth_pred.unsqueeze(-1)
+        # with torch.no_grad(): ToDo: This needs fixing, for now train without IoU
+        #     iou_truth_pred = iou(bbox_1=y[:, :4], bbox_2=y_hat_bboxs[:, :4], bbox_format=BBoxFormat.MID_X_MID_Y_WH)
+        c_hat = y_hat_bboxs[:, 4:5] #* iou_truth_pred.unsqueeze(-1)
 
         # Compute loss
         c_loss = ((y[:, 4:5] - c_hat) ** 2)
