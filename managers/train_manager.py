@@ -64,7 +64,7 @@ class TrainManager:
         # Fit the model
         self._trainer.fit(model=self._model_manager.model,
                           datamodule=self._data_manager,
-                          ckpt_path=str(self._ckpt_path))
+                          ckpt_path=self._ckpt_path)
 
     # ---------------------------------------------------0-----------------------------
     def _get_callbacks(self) -> list:
@@ -101,22 +101,18 @@ class TrainManager:
 
     # --------------------------------------------------------------------------------
     def _check_checkpoint_exists(self,
-                                 ckpt_path: (Path | str)) -> Path:
+                                 ckpt_path: Path) -> (str | None):
         """Check if checkpoint is not empty and if exists
 
         Args:
-            ckpt_path: (Path | str): Checkpoint path
+            ckpt_path: (Path): Checkpoint path
 
         Returns:
-            Path: Checked checkpoint path
+            (str | None): Checked checkpoint path turned into str as expected by Trainer
         """
 
         # Check if checkpoint is provided
-        if str(ckpt_path):
-            # Ensure path is of Path object
-            if not isinstance(ckpt_path, Path):
-                ckpt_path = Path(ckpt_path)
-
+        if ckpt_path.parts:
             # Ensure that ckpt ends with correct suffix
             ckpt_path = ckpt_path.with_suffix(".ckpt")
 
@@ -124,4 +120,6 @@ class TrainManager:
             if not ckpt_path.exists():
                 raise ValueError(f"Checkpoint at {ckpt_path} not found!")
 
-        return ckpt_path
+            return str(ckpt_path)
+
+        return None
