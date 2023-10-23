@@ -3,6 +3,7 @@ import logging
 import lightning as L
 from lightning.pytorch.loggers import WandbLogger
 from lightning.pytorch.callbacks import ModelCheckpoint
+from pathlib import Path
 
 from managers.data_manager import DataManager
 from managers.model_manager import ModelManager
@@ -21,7 +22,8 @@ class TrainManager:
                  model_manager: ModelManager,
                  epochs: int = 1,
                  accelerator: str ="auto",
-                 devices: int = 1):
+                 devices: int = 1,
+                 ckpt_path: str = ""):
         """Initialize Train Manager
 
         Args:
@@ -36,6 +38,7 @@ class TrainManager:
         self._model_manager = model_manager
         self._logger = WandbLogger(project="Dummy")
         self._output_dir = get_output_dir()
+        self._ckpt_path = self._check_checkpoint_exists(ckpt_path=Path(ckpt_path))
 
         self._trainer = L.Trainer(max_epochs=epochs,
                                   logger=self._logger,
@@ -60,7 +63,8 @@ class TrainManager:
 
         # Fit the model
         self._trainer.fit(model=self._model_manager.model,
-                          datamodule=self._data_manager)
+                          datamodule=self._data_manager,
+                          ckpt_path=str(self._ckpt_path))
 
     # ---------------------------------------------------0-----------------------------
     def _get_callbacks(self) -> list:
@@ -94,3 +98,30 @@ class TrainManager:
         )
 
         return checkpoint_callback
+
+    # --------------------------------------------------------------------------------
+    def _check_checkpoint_exists(self,
+                                 ckpt_path: (Path | str)) -> Path:
+        """Check if checkpoint is not empty and if exists
+
+        Args:
+            ckpt_path: (Path | str): Checkpoint path
+
+        Returns:
+            Path: Checked checkpoint path
+        """
+
+        # Check if checkpoint is provided
+        if str(ckpt_path):
+            # Ensure path is of Path object
+            if not isinstance(ckpt_path, Path):
+                ckpt_path = Path(ckpt_path)
+
+            # Ensure that ckpt ends with correct suffix
+            ckpt_path = ckpt_path.with_suffix(".ckpt")
+
+            # Check if exists
+            if not ckpt_path.exists():
+                raise ValueError(f"Checkpoint at {ckpt_path} not found!")
+
+        return ckpt_path

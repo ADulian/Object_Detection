@@ -36,7 +36,8 @@ def main():
                       model_manager=mm,
                       epochs=args.epochs,
                       accelerator=args.accelerator,
-                      devices=args.devices)
+                      devices=args.devices,
+                      ckpt_path=args.ckpt_path)
 
     # Train
     tm()
