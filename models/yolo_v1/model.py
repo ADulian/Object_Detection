@@ -196,12 +196,11 @@ class YoloV1(ModelBase):
         img = Image.open("D:\\Python\\Github\\Object_Detection\\dev_dataset\\images\\000000391895.jpg")
 
         # 1. Prapare the img
-        # ToDo - Image is expected to be square 448x448
         img = self.post_processing.pre_process_img(img)
         img = img.unsqueeze(0)
 
         # 2. Forward
-        # out = self(x=img)
+        out = self(x=img)
 
         # 3. Post Processing
 

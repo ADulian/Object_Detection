@@ -51,7 +51,7 @@ class YoloV1PostProcessing:
 
         """
 
-        img = self._pil_resize(img=img)
+        img, shape_info = self._pil_resize(img=img)
         img = T.ToTensor()(img)
 
         return img

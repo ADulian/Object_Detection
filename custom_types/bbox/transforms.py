@@ -53,7 +53,7 @@ class BBoxResizePad:
         x2y2 = scale_matrix @ x2y2  # [2 x 2] @ [2 x N] = [2 x N]
 
         # 4. Pad boxes
-        bboxs = np.concatenate([x1y1, x2y2]).T  # Shape -> N x 4
+        bboxs = np.concatenate([x1y1, x2y2]).T  # N x 4
         bboxs[:, ::2] += padding_width
         bboxs[:, 1::2] += padding_height
 
