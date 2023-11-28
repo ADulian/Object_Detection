@@ -76,6 +76,7 @@ class CocoDataset(Dataset):
         # Populate img data
         for img_data in imgs_data_json:
             imgs_data[img_data["id"]] = img_data
+            break
 
         # Populate annotations
         for annotation_data in annotations_data_json:

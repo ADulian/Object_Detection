@@ -3,10 +3,13 @@ from typing import Any
 
 import torch
 from torch import nn
+from PIL import Image
+from PIL.Image import Image as PILImage
 
 from models.common.tools import get_layer, get_cfg
 from models.base_classes.model_base import ModelBase
 from models.yolo_v1.criterion import YoloV1Criterion
+from models.yolo_v1.post_processing import YoloV1PostProcessing
 
 # --------------------------------------------------------------------------------
 class YoloV1(ModelBase):
@@ -46,6 +49,9 @@ class YoloV1(ModelBase):
 
         # Initialize Criterion
         self.criterion = YoloV1Criterion()
+
+        # Initialize Post Processing
+        self.post_processing = YoloV1PostProcessing()
 
     # --------------------------------------------------------------------------------
     def _parse_model(self) -> nn.Sequential:
@@ -174,6 +180,33 @@ class YoloV1(ModelBase):
             batch: (Any): batch of data
         """
         raise NotImplementedError("Prediction step not implemented")
+
+    # --------------------------------------------------------------------------------
+    def inference_step(self,
+                       img: PILImage = None):
+
+        """Inference Step on a single image
+
+        Args:
+            img: (PILImage): A single image of type PIL.Image.Image
+
+        """
+
+        # 0. Dev: Load image for now
+        img = Image.open("D:\\Python\\Github\\Object_Detection\\dev_dataset\\images\\000000391895.jpg")
+
+        # 1. Prapare the img
+        # ToDo - Image is expected to be square 448x448
+        img = self.post_processing.pre_process_img(img)
+        img = img.unsqueeze(0)
+
+        # 2. Forward
+        # out = self(x=img)
+
+        # 3. Post Processing
+
+        ...
+
 
     # --------------------------------------------------------------------------------
     def __str__(self):
