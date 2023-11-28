@@ -2,19 +2,78 @@ import math
 
 import numpy as np
 from PIL import Image
+from PIL.Image import Image as PILImage
 
 from custom_types.bbox import BBox, BBoxFormat
 
 # --------------------------------------------------------------------------------
 class PILResizePreserveRatio:
+    """A simple module for resizing PIL Image
+    """
 
     # --------------------------------------------------------------------------------
-    def __init__(self):
-        """Initialie Resize Transform for Pil Images
+    def __init__(self,
+                 target_size: int,
+                 is_square: bool,
+                 resize_longer_side: bool = True,
+                 div_factor: int = 64) -> None:
+        """Initialise Resize Transform for PIL Image
         """
+
+        self._target_size = target_size
+        self._is_square = is_square
+        self._resize_longr_side = resize_longer_side
+        self._div_factor = div_factor
 
     # --------------------------------------------------------------------------------
     def __call__(self,
+                 img: PILImage) -> PILImage:
+        """Resize an image
+
+        The image preserves the aspect ratio and the sides are padded
+        such that each side is divisible by div_factor (64 default)
+
+        Args:
+            img: (PILImage): PIL Image
+
+        Returns
+            PILImage: Resized PIL Image
+        """
+
+        # 1. Cache default shape
+        org_width, org_height = img.width, img.height
+
+        # 2. Compute ratio of max side
+        ratio = self._target_size / max(org_width, org_height)
+
+        # 3. Compute new size of the image
+        new_width, new_height = int(org_width * ratio), int(org_height * ratio)
+
+        # 4. Resize the image
+        resized_img = img.resize((new_width, new_height))
+
+        # 5. Compute size of padded image
+        if self._is_square:
+            # 5.1 Set both sides to have the same target size if the image is meant to be square
+            padded_width, padded_height = self._target_size, self._target_size
+        else:
+            # 5.2 Compute padding to ensure that both Width and Height are divisible by div factor
+            padded_width = math.ceil(new_width / self._div_factor) * self._div_factor
+            padded_height = math.ceil(new_height / self._div_factor) * self._div_factor
+
+        # 6. Compute padding values (img is placed at the centre so pad /2 from sides
+        padding_width = int((padded_width - new_width) / 2)
+        padding_height = int((padded_height - new_height) / 2)
+
+        # 7. Create new image with final padded shape
+        # and paste resize image onto that w.r.t. padding
+        padded_img = Image.new(mode=img.mode, size=(padded_width, padded_height), color=0)
+        padded_img.paste(resized_img, (padding_width, padding_height))
+
+        return padded_img
+
+    # --------------------------------------------------------------------------------
+    def old_call(self,
                  target_size: int,
                  img: Image.Image,
                  bboxs: (list[BBox] | None) = None,
