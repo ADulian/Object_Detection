@@ -6,7 +6,7 @@ import torchvision.transforms as T
 from PIL import Image
 from PIL.Image import Image as PILImage
 
-from image_processing.resize_preserve_ratio import PILResizePreserveRatio
+from image_processing.pil_resize_preserve_ratio import PILResizePreserveRatio
 from models.common.tools import get_cfg
 
 

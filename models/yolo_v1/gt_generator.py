@@ -8,8 +8,8 @@ from torch.utils.data import Dataset
 
 from datasets.coco_dataset import CocoDataset
 from models.common.tools import get_cfg
-from image_processing.resize_preserve_ratio import PILResizePreserveRatio
-from custom_types.bbox import BBoxFormat
+from image_processing.pil_resize_preserve_ratio import PILResizePreserveRatio
+from custom_types.bbox import BBoxFormat, BBoxResizePad
 from .utils import normalize_bbox
 
 # --------------------------------------------------------------------------------
@@ -40,7 +40,10 @@ class YoloV1GTGenerator(Dataset):
         self._cell_size = self._in_size // self._num_cells
 
         # Transforms
-        self._preprocess = PILResizePreserveRatio()
+        self._preprocess_img = PILResizePreserveRatio(target_size=self._in_size,
+                                                      is_square=True)
+        self._preprocess_bbox = BBoxResizePad()
+
         self._transforms_on = transforms_on
         self._transforms = transforms
 
@@ -91,7 +94,16 @@ class YoloV1GTGenerator(Dataset):
             bboxs.append(ann.bbox)
 
         # Preprocess image
-        img, bboxs = self._preprocess(target_size=self._in_size, img=img, bboxs=bboxs)
+        img, shape_info = self._preprocess_img(img=img)
+
+
+        # Preprocess bounding box
+        bboxs = self._preprocess_bbox(bboxs=bboxs,
+                                      max_height=shape_info.final_height,
+                                      max_width=shape_info.final_width,
+                                      padding_height=shape_info.padding_height,
+                                      padding_width=shape_info.padding_width,
+                                      resize_scale=shape_info.resize_scale)
 
         # Transform img
         if self.transforms is not None:
