@@ -8,8 +8,8 @@ from PIL.Image import Image as PILImage
 
 from models.common.tools import get_layer, get_cfg
 from models.base_classes.model_base import ModelBase
-from models.yolo_v1.criterion import YoloV1Criterion
-from models.yolo_v1.post_processing import YoloV1PostProcessing
+from models.yolo_v1.yolo_v1_criterion import YoloV1Criterion
+from models.yolo_v1.yolo_v1_post_processing import YoloV1PostProcessing
 
 # --------------------------------------------------------------------------------
 class YoloV1(ModelBase):

@@ -9,10 +9,11 @@ from torch.utils.data import Dataset
 from datasets.coco_dataset import CocoDataset
 from models.common.tools import get_cfg
 from image_processing.pil_resize_preserve_ratio import PILResizePreserveRatio
-from custom_types.bbox import BBoxFormat, BBoxResizePad
-from .utils import normalize_bbox
+from custom_types.bbox import BBoxFormat
+from models.yolo_v1.yolo_v1_bbox_transforms import YoloV1BBoxTransforms
 
 # --------------------------------------------------------------------------------
+# TODO: Just call it a dataset
 class YoloV1GTGenerator(Dataset):
     """Ground truth generator for YoloV1
     """
@@ -42,7 +43,6 @@ class YoloV1GTGenerator(Dataset):
         # Transforms
         self._preprocess_img = PILResizePreserveRatio(target_size=self._in_size,
                                                       is_square=True)
-        self._preprocess_bbox = BBoxResizePad()
 
         self._transforms_on = transforms_on
         self._transforms = transforms
@@ -98,12 +98,12 @@ class YoloV1GTGenerator(Dataset):
 
 
         # Preprocess bounding box
-        bboxs = self._preprocess_bbox(bboxs=bboxs,
-                                      max_height=shape_info.final_height,
-                                      max_width=shape_info.final_width,
-                                      padding_height=shape_info.padding_height,
-                                      padding_width=shape_info.padding_width,
-                                      resize_scale=shape_info.resize_scale)
+        bboxs = YoloV1BBoxTransforms.bbox_resize_pad(bboxs=bboxs,
+                                                     max_height=shape_info.final_height,
+                                                     max_width=shape_info.final_width,
+                                                     padding_height=shape_info.padding_height,
+                                                     padding_width=shape_info.padding_width,
+                                                     resize_scale=shape_info.resize_scale)
 
         # Transform img
         if self.transforms is not None:
@@ -127,9 +127,9 @@ class YoloV1GTGenerator(Dataset):
                 x_cell, y_cell = int(min(x_cell, self._num_cells)), int(min(y_cell, self._num_cells))
 
                 # Normalize bbox
-                x, y, w, h = normalize_bbox(mid_x=x, mid_y=y, width=w, height=h,
-                                            x_cell=x_cell, y_cell=y_cell,
-                                            cell_size=self._cell_size, in_size=self._in_size)
+                x, y, w, h = YoloV1BBoxTransforms.normalize_bbox(mid_x=x, mid_y=y, width=w, height=h,
+                                                                 x_cell=x_cell, y_cell=y_cell,
+                                                                 cell_size=self._cell_size, in_size=self._in_size)
 
                 # Place information in a grid
                 grid[x_cell, y_cell] = np.array([x, y, w ,h , 1, class_idx], dtype=float)

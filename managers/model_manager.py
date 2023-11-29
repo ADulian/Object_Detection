@@ -5,8 +5,8 @@ import torch
 import torch.nn as nn
 
 from models.base_classes.model_base import ModelBase
-from models.yolo_v1.model import YoloV1
-from models.yolo_v1.gt_generator import YoloV1GTGenerator
+from models.yolo_v1.yolo_v1_model import YoloV1
+from models.yolo_v1.yolo_v1_gt_generator import YoloV1GTGenerator
 
 log = logging.getLogger("lightning")
 

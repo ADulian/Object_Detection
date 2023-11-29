@@ -1,9 +1,7 @@
 import os
-import math
 
 import torch
 import torchvision.transforms as T
-from PIL import Image
 from PIL.Image import Image as PILImage
 
 from image_processing.pil_resize_preserve_ratio import PILResizePreserveRatio
@@ -25,6 +23,7 @@ class YoloV1PostProcessing:
 
         # Settings
         self._in_size = self._cfg["in_size"]
+        self._num_cells = self._cfg["num_cells"]
         self._div_factor = 64
 
         # Resize
@@ -33,7 +32,25 @@ class YoloV1PostProcessing:
                                                   resize_longer_side=True)
 
     # --------------------------------------------------------------------------------
-    def __call__(self):
+    def __call__(self,
+                 model_out: torch.Tensor):
+        """
+        """
+
+        # Squeeze batch dim
+        model_out = model_out.squeeze(0)
+
+        # Check for shapes
+        # Expected [7 x 7 x N]
+        num_cells_height, num_cells_width, _ = model_out.shape
+        assert num_cells_width == num_cells_height, "Grid must have an equal height and width. " \
+                                                    f"Got: Height {num_cells_height}, Width {num_cells_width}"
+
+        assert num_cells_width == self._num_cells, "Incorrect number of output cells " \
+                                                   f"Expected {self._num_cells}, Got {num_cells_width}"
+
+        # Transform from Grid space
+
         ...
 
     # --------------------------------------------------------------------------------
@@ -55,3 +72,6 @@ class YoloV1PostProcessing:
         img = T.ToTensor()(img)
 
         return img
+
+    # --------------------------------------------------------------------------------
+

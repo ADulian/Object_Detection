@@ -4,7 +4,7 @@ import torch
 from metrics.iou import iou
 from custom_types.bbox import BBoxFormat
 from models.common.tools import get_cfg
-from models.yolo_v1.utils import batch_unnormalize_bbox
+from models.yolo_v1.yolo_v1_bbox_transforms import YoloV1BBoxTransforms
 
 # --------------------------------------------------------------------------------
 class YoloV1Criterion:
@@ -49,14 +49,14 @@ class YoloV1Criterion:
         bboxs_y_hat_2 = y_hat[..., 5:9].clone()
 
         # Unnormalize
-        bboxs_y = batch_unnormalize_bbox(batch_bbox=bboxs_y,
-                                         cell_size=self._cell_size, in_size=self._in_size)
+        bboxs_y = YoloV1BBoxTransforms.batch_unnormalize_bbox(batch_bbox=bboxs_y,
+                                                              cell_size=self._cell_size, in_size=self._in_size)
 
-        bboxs_y_hat_1 = batch_unnormalize_bbox(batch_bbox=bboxs_y_hat_1,
-                                               cell_size=self._cell_size, in_size=self._in_size)
+        bboxs_y_hat_1 = YoloV1BBoxTransforms.batch_unnormalize_bbox(batch_bbox=bboxs_y_hat_1,
+                                                                    cell_size=self._cell_size, in_size=self._in_size)
 
-        bboxs_y_hat_2 = batch_unnormalize_bbox(batch_bbox=bboxs_y_hat_2,
-                                               cell_size=self._cell_size, in_size=self._in_size)
+        bboxs_y_hat_2 = YoloV1BBoxTransforms.batch_unnormalize_bbox(batch_bbox=bboxs_y_hat_2,
+                                                                    cell_size=self._cell_size, in_size=self._in_size)
 
         # Rehspae bboxs
         bboxs_y = bboxs_y.view(-1, bboxs_y.shape[-1])

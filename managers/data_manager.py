@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader
 from datasets.coco_dataset import CocoDataset
 from datasets.base_classes import DatasetSplit
 from utils.io import path_check
-from models.yolo_v1.gt_generator import YoloV1GTGenerator
+from models.yolo_v1.yolo_v1_gt_generator import YoloV1GTGenerator
 
 log = logging.getLogger("lightning")
 

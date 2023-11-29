@@ -3,18 +3,18 @@ import numpy as np
 from custom_types.bbox import BBox, BBoxFormat
 
 # --------------------------------------------------------------------------------
-class BBoxResizePad:
+class BBoxTransforms:
     """ A simple class that Resizes and Pads Bounding Box objects
     """
 
     # --------------------------------------------------------------------------------
-    def __call__(self,
-                 bboxs: (BBox | list[BBox]),
-                 max_height: int = 0,
-                 max_width: int = 0,
-                 padding_height: int = 0,
-                 padding_width: int = 0,
-                 resize_scale: float = 1.0) -> (BBox | list[BBox]):
+    @staticmethod
+    def bbox_resize_pad(bboxs: (BBox | list[BBox]),
+                        max_height: int = 0,
+                        max_width: int = 0,
+                        padding_height: int = 0,
+                        padding_width: int = 0,
+                        resize_scale: float = 1.0) -> (BBox | list[BBox]):
 
         """ Resize and Pad bounding boxes w.r.t. changes made to an Image
 
@@ -66,7 +66,7 @@ class BBoxResizePad:
             for bbox in bboxs:
                 bbox.clamp_bbox(max_width=max_width, max_height=max_height)
 
-        elif clamp_bboxs == 1:  # One of values is given
+        elif clamp_bboxs == 1:  # One value is given
             raise ValueError(f"Only one max value has been give: max height {max_height}, max width {max_width}")
 
         return bboxs[0] if is_single_box else bboxs
